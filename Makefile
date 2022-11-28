@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ivan/Desktop/Doktor/AlphaMol
+CMAKE_SOURCE_DIR = /home/ivan/Desktop/Doktor/Code/AlphaMol
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ivan/Desktop/Doktor/AlphaMol
+CMAKE_BINARY_DIR = /home/ivan/Desktop/Doktor/Code/AlphaMol
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,9 +80,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ivan/Desktop/Doktor/AlphaMol/CMakeFiles /home/ivan/Desktop/Doktor/AlphaMol/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ivan/Desktop/Doktor/Code/AlphaMol/CMakeFiles /home/ivan/Desktop/Doktor/Code/AlphaMol/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ivan/Desktop/Doktor/AlphaMol/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ivan/Desktop/Doktor/Code/AlphaMol/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -111,6 +111,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named AlphaMolExecutable
+
+# Build rule for target.
+AlphaMolExecutable: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 AlphaMolExecutable
+.PHONY : AlphaMolExecutable
+
+# fast build rule for target.
+AlphaMolExecutable/fast:
+	$(MAKE) -f CMakeFiles/AlphaMolExecutable.dir/build.make CMakeFiles/AlphaMolExecutable.dir/build
+.PHONY : AlphaMolExecutable/fast
+
+#=============================================================================
 # Target rules for targets named AlphaMol
 
 # Build rule for target.
@@ -129,6 +142,7 @@ project/src/AlphaMol.o: project/src/AlphaMol.cpp.o
 
 # target to build an object file
 project/src/AlphaMol.cpp.o:
+	$(MAKE) -f CMakeFiles/AlphaMolExecutable.dir/build.make CMakeFiles/AlphaMolExecutable.dir/project/src/AlphaMol.cpp.o
 	$(MAKE) -f CMakeFiles/AlphaMol.dir/build.make CMakeFiles/AlphaMol.dir/project/src/AlphaMol.cpp.o
 .PHONY : project/src/AlphaMol.cpp.o
 
@@ -138,6 +152,7 @@ project/src/AlphaMol.i: project/src/AlphaMol.cpp.i
 
 # target to preprocess a source file
 project/src/AlphaMol.cpp.i:
+	$(MAKE) -f CMakeFiles/AlphaMolExecutable.dir/build.make CMakeFiles/AlphaMolExecutable.dir/project/src/AlphaMol.cpp.i
 	$(MAKE) -f CMakeFiles/AlphaMol.dir/build.make CMakeFiles/AlphaMol.dir/project/src/AlphaMol.cpp.i
 .PHONY : project/src/AlphaMol.cpp.i
 
@@ -147,6 +162,7 @@ project/src/AlphaMol.s: project/src/AlphaMol.cpp.s
 
 # target to generate assembly for a file
 project/src/AlphaMol.cpp.s:
+	$(MAKE) -f CMakeFiles/AlphaMolExecutable.dir/build.make CMakeFiles/AlphaMolExecutable.dir/project/src/AlphaMol.cpp.s
 	$(MAKE) -f CMakeFiles/AlphaMol.dir/build.make CMakeFiles/AlphaMol.dir/project/src/AlphaMol.cpp.s
 .PHONY : project/src/AlphaMol.cpp.s
 
@@ -158,6 +174,7 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
+	@echo "... AlphaMolExecutable"
 	@echo "... AlphaMol"
 	@echo "... project/src/AlphaMol.o"
 	@echo "... project/src/AlphaMol.i"

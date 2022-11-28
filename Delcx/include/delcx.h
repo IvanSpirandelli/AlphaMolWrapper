@@ -160,7 +160,7 @@ protected:
     std::stack<int> free;
     std::vector<int> kill;
 
-    double eps = 1.e-5;
+    double eps = 1.e-3;
 
     int inf4_1[4] = {1, 1, 0, 0};
     int sign4_1[4] = {-1, 1, 1, -1};
