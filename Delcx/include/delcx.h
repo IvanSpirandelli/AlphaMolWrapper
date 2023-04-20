@@ -4,39 +4,57 @@
 	This class computes the regular triangulation of a set
 	of N weighted points in 3D, using the incremental flipping
 	algorithm of Edelsbrunner.
+
 	This implementation is based on the algorithm published in
 	H. Edelsbrunner and N.R. Shah, Algorithmica (1996) 15: 223-241
+
 	1) Algorithm:
 	*************
+
 	Briefly, the algorithm works as follows:
+
 	- first, a large tetrahedron initialises the program. All
 	four vertices of this tetrahedron are set at "infinite"
+
 	- All N points are added one by one.
+
 	- For each point:
+
 		- localize the tetrahedron in the current regular
 		triangulation that contains this point
+
 		- test if the point is redundant; if yes, remove
+
 		- If the point is not redundant, insert in the
 		tetrahedron : this is a "1-4" flip
+
 		- collect all "link facets" (i.e. all triangles
 		in tetrahedron containing the new point, that face
 		this new point) that are not regular.
+
 		- for each non-regular link facet, check if it
 		is "flippable". If yes, perform a "2-3", "3-2"
 		or "1-4" flip. Add new link facets in the list,
 		if needed.
+
 		- when link facet list if empty, move to next
 		point
+
 	- Remove "infinite" tetrahedron, i.e. tetrahedron with
 	one vertice at "infinite"
+
 	- collect all remaining tetrahedron, define convex hull,
 	and exit.
+
 	2) Data structure:
 	******************
+
 	I maintain a minimal data structure that includes only
 	the tetrahedrons of the triangulation (triangles,
 	edges and vertices are implicit).
+
 	For each tetrahedron, I store:
+
 	- the index of its four vertices
 	- pointers to its neighbours (4 maximum).
 		neighbor(i) is the tetrahedron that shares
@@ -44,12 +62,17 @@
 		(0 if the corresponding face is on the convex hull)
 	- its status: 1 "active" (i.e. part of the triangulation), 0 inactive
 	- its orientation
+
+
 	2) number representation:
 	**************************
+
 	I use double precision floating points. However, if one of
 	the geometricaly test becomes "imprecise", I switch to
 	arbitrary precision arithmetics (using the gmp package).
+
 	All predicates have therefore a floating point filter
+
  ==================================================================== */
 
 #ifndef DELCX_H
@@ -160,7 +183,7 @@ protected:
     std::stack<int> free;
     std::vector<int> kill;
 
-    double eps = 1.e-3;
+    double eps = 1.e-4;
 
     int inf4_1[4] = {1, 1, 0, 0};
     int sign4_1[4] = {-1, 1, 1, -1};
@@ -369,10 +392,7 @@ void DELCX::setup(int npoints, double *coord, double *radii, double *coefS, doub
             vert.status = 0;
             vertices.push_back(vert);
         }
-        delete [] bcoord;
-        delete [] brad;
     }
-
 
 /* ====================================================================
 	Initialisation:
@@ -406,12 +426,15 @@ void DELCX::setup(int npoints, double *coord, double *radii, double *coefS, doub
 
 /* ====================================================================
 	Implements a 3D weighted delaunay triangulation
+
 	Input:
 	*******
+
 	vertices:	vertices (with vertices 0-3 representing
 			an infinite tetrahedron
 	Output:
 	********
+
 	tetra:		all tetrahedra of the regular triangulation
  ==================================================================== */
 
@@ -488,17 +511,20 @@ void DELCX::regular3D(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& t
 	Now I peel off flat tetrahedra at the boundary of the DT
  ==================================================================== */
 
-//	peel(vertices, tetra);
+    peel(vertices, tetra);
 
     sos.clear_sos_gmp();
 }
 
 /* =====================================================================================================
+
  This procedure tests if a point p is inside a tetrahedron defined by four points (a,b,c,d)
  (with orientation "iorient"). If p is found inside the tetrahedron, it also checks if it
  is redundant
+
  Computations are performed  in floating point, but they are switched to multiple precision if the
  results are imprecise
+
  ===================================================================================================== */
 
 void DELCX::inside_tetra(std::vector<Vertex>& vertices, int p, int a, int b, int c, int d,
@@ -539,35 +565,48 @@ void DELCX::inside_tetra(std::vector<Vertex>& vertices, int p, int a, int b, int
     All four tests relies on the sign of the corresponding 4x4
     determinant. Interestingly, these four determinants share
     some common lines, which can be used to speed up the computation.
+
     Let us consider or example:
+
     det(p,i,j,k) =  | p(1) p(2) p(3) 1|
             | i(1) i(2) i(3) 1|
             | j(1) j(2) j(3) 1|
             | k(1) k(2) k(3) 1|
+
     p appears in each determinant. The corresponding line can therefore
     be substraced from all 3 other lines . Using the example above,
     we find:
+
     det(i,j,k,l) = -|ip(1) ip(2) ip(3)|
             |jp(1) jp(2) jp(3)|
             |kp(1) kp(2) kp(3)|
+
     where :xp(m) = x(m) - p(m) for x = i,j,k and m = 1,2,3
+
     Now we notice that the first two lines of det(p,i,j,k) and det(p,i,j,l) are the same.
+
     Let us define: Sij_3 = |ip(1) ip(2)| Sij_2 = |ip(1) ip(3)| and Sij_1 = |ip(2) ip(3)|
                    |jp(1) jp(2)|         |jp(1) jp(3)|             |jp(2) jp(3)|
+
     We find:
     det(p,i,j,k) = - kp(1)*Sij_1 + kp(2)*Sij_2 - kp(3)*Sij_3
     and:
     det(p,j,i,l) =   lp(1)*Sij_1 - lp(2)*Sij_2 + lp(3)*Sij_3
+
     Similarly, if we define:
+
     Skl_3 = |kp(1) kp(2)|	Skl_2 = |kp(1) kp(3)|	Skl_1 = |kp(2) kp(3)|
         |lp(1) lp(2)|		|lp(1) lp(3)|		|lp(2) lp(3)|
+
     We find:
     det(p,k,j,l) = jp(1)*Skl_1 - jp(2)*Skl_2 + jp(3)*Skl_3
     and:
     det(p,i,k,l) = -ip(1)*Skl_1 + ip(2)*Skl_2 - ip(3)*Skl_3
+
     Furthermore:
     det(p,i,j,k,l) = -ip(4)*det(p,k,j,l)-jp(4)*det(p,i,k,l)
             -kp(4)*det(p,j,i,l)-lp(4)*det(p,i,j,k)
+
     The equations above hold for the general case; special care is
     required to take in account infinite points (see below)
      */
@@ -902,6 +941,7 @@ void DELCX::inside_tetra(std::vector<Vertex>& vertices, int p, int a, int b, int
         *redundant = 0; //false
 
     } else if (ninf == 2) { /*
+
 				We know that two of the 4 vertices a,b,c or d are infinite
 				To find which one it is, we use a map between
 				(inf(a),inf(b),inf(c),inf(d)) and X, where inf(i)
@@ -1223,6 +1263,7 @@ void DELCX::regular_convex(std::vector<Vertex>& vertices, int a, int b, int c,
     If the three determinants are negative, & det(a,b,c,p) is positive,the union is convex
     In all other cases, the union is non convex
     The regularity is tested by computing det(a,b,c,p,o)
+
     first count how many infinite points (except o)
     only a and/or b and/or c can be infinite:
      */
@@ -1255,15 +1296,20 @@ void DELCX::regular_convex(std::vector<Vertex>& vertices, int a, int b, int c,
         det(a,b,p,o)= - | ap(1) ap(2) ap(3) |
                 | bp(1) bp(2) bp(3) |
                 | op(1) op(2) op(3) |
+
         det(b,c,p,o)=  -| bp(1) bp(2) bp(3) |
                 | cp(1) cp(2) cp(3) |
                 | op(1) op(2) op(3) |
+
         det(c,a,p,o)=  -| cp(1) cp(2) cp(3) |
                 | ap(1) ap(2) ap(3) |
                 | op(1) op(2) op(3) |
+
         Where ip(j) = i(j) - p(j) for all i in {a,b,c,o} and j in {1,2,3}
                 Compute two types of minors:
+
         Mbo_ij = bp(i)op(j) - bp(j)op(i) and Mca_ij = cp(i)ap(j) - cp(j)op(i)
+
         Store Mbo_12 in Mbo(3), Mbo_13 in Mbo(2),...
          */
         //get the coordinates
@@ -1298,11 +1344,13 @@ void DELCX::regular_convex(std::vector<Vertex>& vertices, int a, int b, int c,
                     | c(1) c(2) c(3) c(4) 1 |
                     | p(1) p(2) p(3) p(4) 1 |
                     | o(1) o(2) o(3) o(4) 1 |
+
         First substract row p :
         det(a,b,c,p,o) =      - | ap(1) ap(2) ap(3) ap(4) |
                     | bp(1) bp(2) bp(3) bp(4) |
                     | cp(1) cp(2) cp(3) cp(4) |
                     | op(1) op(2) op(3) op(4) |
+
         Expand w.r.t last column
          */
         det_abcpo = -a_p[3] * det_bcpo - b_p[3] * det_capo - c_p[3] * det_abpo + o_p[3] * det_abpc;
@@ -1555,6 +1603,7 @@ void DELCX::regular_convex(std::vector<Vertex>& vertices, int a, int b, int c,
 				If i = a, (k,l) = (b,c)
 				If i = b, (k,l) = (c,a)
 				If i = c, (k,l) = (a,b)
+
 				Again: idx = 2 + inf(a) - inf(c)
 				*/
         idx = 1 + infPoint[0] - infPoint[2];
@@ -1757,7 +1806,9 @@ void DELCX::missinf_sign(int i, int j, int k, int *l, int *sign)
 
 /* ======================================================================================
 	Flip_2_3
+
 	This procedure implements a 2->3 flip in 3D for regular triangulation
+
 	a 2->3 flip is a transformation in which two tetrahedrons are
 	flipped into three tetrahedra. The two tetrahedra (abcp) and
 	(abco) shares a triangle (abc) which is in the link_facet of the
@@ -1769,6 +1820,7 @@ void DELCX::missinf_sign(int i, int j, int k, int *l, int *sign)
 	Once the flip has been performed, three new tetrahedra are added
 	and three new "link facet" are added to the link
 	facet queue
+
 	Input:
 		- itetra:	index of the tetrahedra (a,b,c,p) considered
 		- jtetra:	index of the tetrahedra (a,b,c,o) considered
@@ -1778,6 +1830,7 @@ void DELCX::missinf_sign(int i, int j, int k, int *l, int *sign)
 		- test_abpo:	orientation of the four points a,b,p,o
 		- test_bcpo:	orientation of the four points b,c,p,o
 		- test_capo:	orientation of the four points c,a,p,o
+
 	Output:
 		- nlink_facet:	3 new link facets are added
 		- link_facet:	the three faces of the initial tetrahedron
@@ -1824,6 +1877,7 @@ void DELCX::flip_2_3(std::vector<Tetrahedron>& tetra, int itetra, int jtetra,
     }
 
 /* ======================================================================================
+
 	Define
 	- itetra_touch: the three tetrahedra that touches itetra on the
 			faces opposite to the 3 vertices a,b,c
@@ -1894,6 +1948,7 @@ void DELCX::flip_2_3(std::vector<Tetrahedron>& tetra, int itetra, int jtetra,
 /* ======================================================================================
 	define the three new tetrahedra: (bcop), (acop) and (abop)
 	as well as their neighbours
+
 	tetrahedron bcop : neighbours are acop, abop, neighbour of (abcp)
 			   on face bcp, and neighbour of (abco) on face bco
 	tetrahedron acop : neighbours are bcop, abop, neighbour of (abcp)
@@ -1955,9 +2010,11 @@ void DELCX::flip_2_3(std::vector<Tetrahedron>& tetra, int itetra, int jtetra,
     }
 
 /* ======================================================================================
+
 	Now add all three faces of jtetra containing o in the link_facet queue.
 	Each link_facet (a triangle) is implicitly defined as the
 	intersection of two tetrahedra
+
 	link_facet:	bco	tetrahedra:	bcop and neighbour of (abco)
 						on bco
 	link_facet:	aco	tetrahedra:	acop and neighbour of (abco)
@@ -1977,14 +2034,17 @@ void DELCX::flip_2_3(std::vector<Tetrahedron>& tetra, int itetra, int jtetra,
 
 /* ======================================================================================
 	This procedure implements a 4->1 flip in 3D for regular triangulation
+
 	a 4->1 flip is a transformation in which a tetrahedron and a single
 	vertex included in the tetrahedron are transformed to 4 tetrahedra,
 	defined from the 4 four faces of the initial tetrahedron, connected
 	to the new point. Each of the faces are then called "link facet",
 	and stored on a queue
+
 	Input:
 		- ipoint:	index of the point p to be included
 		- itetra:	index of the tetrahedra (a,b,c,d) considered
+
 	Output:
 		- nlink_facet:	4
 		- link_facet:	Add the four faces of the initial tetrahedron
@@ -2054,9 +2114,11 @@ void DELCX::flip_1_4(std::vector<Tetrahedron>& tetra, int ipoint, int itetra,
 	The tetrahedron is defined as (ijkl); four new tetrahedra are
 	created:	jklp, iklp, ijlp, and ijkp, where p is the new
 	point to be included
+
 	For each new tetrahedron, define all four neighbours:
 	For each neighbour, I store the index of the vertex opposite to
 	the common face in array tetra_nindex
+
 	tetrahedron jklp : neighbours are iklp, ijlp, ijkp and neighbour
 			   of (ijkl) on face jkl
 	tetrahedron iklp : neighbours are jklp, ijlp, ijkp and neighbour
@@ -2104,6 +2166,7 @@ void DELCX::flip_1_4(std::vector<Tetrahedron>& tetra, int ipoint, int itetra,
 	Now add all fours faces of itetra in the link_facet queue.
 	Each link_facet (a triangle) is implicitly defined as the
 	intersection of two tetrahedra
+
 	link_facet:	jkl	tetrahedra:	jklp and neighbour of (ijkl)
 						on jkl
 	link_facet:	ikl	tetrahedra:	iklp and neighbour of (ijkl)
@@ -2125,6 +2188,7 @@ void DELCX::flip_1_4(std::vector<Tetrahedron>& tetra, int ipoint, int itetra,
 
 /* ======================================================================================
 	flip_3_2 implements a 3->2 flip in 3D for regular triangulation
+
 	a 3->2 flip is a transformation in which three tetrahedrons are
 	flipped into two tetrahedra. The two tetrahedra (abpo), (abcp) and
 	(abco) shares an edge (ab) which is in the link_facet of the
@@ -2134,6 +2198,7 @@ void DELCX::flip_1_4(std::vector<Tetrahedron>& tetra, int ipoint, int itetra,
 	true.
 	Once the flip has been performed, two new tetrahedra are added
 	and two new "link facet" are added to the link facet queue
+
 	Input:
 		- itetra:	index of the tetrahedra (a,b,c,p) considered
 		- jtetra:	index of the tetrahedra (a,b,c,o) considered
@@ -2144,6 +2209,7 @@ void DELCX::flip_1_4(std::vector<Tetrahedron>& tetra, int ipoint, int itetra,
 		- edgek		indices of a,b in (a,b,o,p)
 		- test_bcpo   : orientation of the four points b,c,p,o
 		- test_acpo   : orientation of the four points a,c,p,o
+
 	Output:
 		- nlink_facet:	2 new link facets are added
 		- link_facet:	the two faces of the initial tetrahedron
@@ -2280,11 +2346,15 @@ void DELCX::flip_3_2(std::vector<Tetrahedron>& tetra, int itetra, int jtetra,
 		the tetrahedron that share these faces with itetra, jtetra and
 		ktetra, respectively. This information is stored
 		in three arrays, itetra_touch, jtetra_touch and ktetra_touch
+
 	These information are given by the calling program
+
 	For bookkeeping reasons, I always set p to be the last vertex
 	of the new tetrahedra
+
 	Now I define the two new tetrahedra: (bcop) and (acop)
 	as well as their neighbours
+
 	tetrahedron bcop : neighbours are acop, neighbour of (abop)
 			   on face bpo, neighbour of (abcp) on face bcp
 			   and neighbour of (abco) on face (bco)
@@ -2351,10 +2421,12 @@ void DELCX::flip_3_2(std::vector<Tetrahedron>& tetra, int itetra, int jtetra,
     }
 
 /* ======================================================================================
+
 	Now add the two faces of ktetra containing (co) in the link_facet
 	queue.
 	Each link_facet (a triangle) is implicitly defined as the
 	intersection of two tetrahedra
+
 	link_facet:	bco	tetrahedra:	bcop and neighbour of (abco)
 						on bco
 	link_facet:	aco	tetrahedra:	acop and neighbour of (abco)
@@ -2371,6 +2443,7 @@ void DELCX::flip_3_2(std::vector<Tetrahedron>& tetra, int itetra, int jtetra,
 
 /* ======================================================================================
 	This subroutine implements a 4->1 flip in 3D for regular triangulation
+
 	a 4->1 flip is a transformation in which four tetrahedra are
 	flipped into one tetrahedron. The two tetrahedra (abop), (bcop),
 	(abcp) and (abco) shares a vertex (b) which is in the link_facet of the
@@ -2382,6 +2455,7 @@ void DELCX::flip_3_2(std::vector<Tetrahedron>& tetra, int itetra, int jtetra,
 	true.
 	Once the flip has been performed, one tetrahedron is added
 	and one new "link facet" is added to the link facet queue
+
 	Input:
 		- itetra:	index of the tetrahedra (a,b,c,p) considered
 		- jtetra:	index of the tetrahedra (a,b,c,o) considered
@@ -2393,6 +2467,7 @@ void DELCX::flip_3_2(std::vector<Tetrahedron>& tetra, int itetra, int jtetra,
 		- kdp		index of b in (a,b,o,p)
 		- ldp		index of b in (b,c,o,p)
 		- test_acpo:	orientation of the 4 points (a,c,p,o)
+
 	Output:
 		- nlink_facet:	1 new link facet is added
 		- link_facet:	the face of the initial tetrahedron
@@ -2403,6 +2478,7 @@ void DELCX::flip_3_2(std::vector<Tetrahedron>& tetra, int itetra, int jtetra,
 				of the vertex opposite to the triangle in each
 				tetrehedron in the array link_index
 		- ierr:		1 if flip was not possible
+
  ======================================================================================*/
 
 void DELCX::flip_4_1(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra,
@@ -2513,7 +2589,9 @@ void DELCX::flip_4_1(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& te
 /* ======================================================================================
 	For bookkeeping reason, p is set to be the last vertex of the
 	new tetrahedron
+
 	Now I define the new tetrahedron: (acop)
+
 	tetrahedron acop : neighbor of (bcop) on face cpo, neighbor of (abop)
 			   on face apo, neighbor of (abcp) on face acp
 			   and neighbor of (abco) on face aco
@@ -2566,6 +2644,7 @@ void DELCX::flip_4_1(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& te
 
 /* ======================================================================================
 	Now add one link facet :
+
 	link_facet:	aco	tetrahedra:	acop and neighbour of (abco)
 						on aco
  ======================================================================================*/
@@ -2578,6 +2657,7 @@ void DELCX::flip_4_1(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& te
 /* ====================================================================
 	This subroutine locates the tetrahedron containing a new
 	point to be added in the triangulation
+
 	This implementation of the point location scheme
 	uses a "jump-and-walk" technique: first, N active
 	tetrahedra are chosen at random. The "distances" between
@@ -2588,9 +2668,13 @@ void DELCX::flip_4_1(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& te
 	the point.
 	It also checks if the point is redundant in the current
 	tetrahedron. It it is, the search terminates.
+
 	Input:
+
 	- ival:	index of the points to be located
+
 	Output:
+
 	- tetra_loc:	tetrahedron containing the point
 	- iredundant:	flag for redundancy: 0 is not redundant,
 			1 otherwise
@@ -2769,8 +2853,10 @@ void DELCX::flip(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra)
 /* ==============================================================================
 		After discarding the trivial case, we now test if the tetrahedra
 		can be flipped.
+
 		At this stage, I know that the link facet is not locally
 		regular. I still don t know if it is "flippable"
+
 		I first check if {itetra} U {jtetra} is convex. If it is, I
 		perform a 2-3 flip (this is the convexity test performed
 		at the same time as the regularity test)
@@ -2973,6 +3059,7 @@ void DELCX::flip(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra)
 
 /* ===============================================================================
  Define_facet
+
 	A triangle (or facet) is defined by the intersection of two
 	tetrahedra itetra and jtetra
 	If we know the position of its three vertices in the first
@@ -2981,12 +3068,15 @@ void DELCX::flip(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra)
 	in the second tetrahedron.
 	This routine also stores information about the neighbours
 	of the two tetrahedra considered
+
 	The vertices are called a,b,c,p, and o, where (abc) is the
 	common facet
+
 	Input:
 		- itetra:	index of the tetrahedra (a,b,c,p) considered
 		- jtetra:	index of the tetrahedra (a,b,c,o) considered
 		- idx_o:	position of o in the vertices of jtetra
+
 	Output:
 		- jtouch	jtouch(i) is the tetrahedron sharing
 				the face opposite to i in tetrahedron jtetra
@@ -3006,6 +3096,7 @@ void DELCX::define_facet(std::vector<Tetrahedron>& tetra, int itetra, int jtetra
 		- find the three vertices that define their common face
 		 these vertices are stored in the array triangle
 		- find the vertices p and o
+
 	To define the common face of the two tetrahedra itetra and jtetra,
 	I look at the neighbours of itetra : one of them is jtetra!
 	This also provides p. The same procedure is repeated for jtetra,
@@ -3220,15 +3311,19 @@ double DELCX::tetra_vol(double *a, double *b, double *c, double *d)
 
 /* ====================================================================
 	The volume of the tetrahedron is proportional to:
+
 	vol = det | a(1)  a(2)  a(3)  1|
 		  | b(1)  b(2)  b(3)  1|
 		  | c(1)  c(2)  c(3)  1|
 		  | d(1)  d(2)  d(3)  1|
+
 	After substracting the last row from the first 3 rows, and
 	developping with respect to the last column, we obtain:
+
 	vol = det | ad(1)  ad(2)  ad(3) |
 		  | bd(1)  bd(2)  bd(3) |
 		  | cd(1)  cd(2)  cd(3) |
+
 	where ad(i) = a(i) - d(i), ...
  ==================================================================== */
 
@@ -3249,6 +3344,7 @@ double DELCX::tetra_vol(double *a, double *b, double *c, double *d)
 
 /* ====================================================================
 	reorder_tetra
+
 	reorders the vertices of a list of tetrahedron,
 	such that now the indices are in increasing order
  ==================================================================== */
@@ -3300,6 +3396,7 @@ void DELCX::reorder_tetra(std::vector<Tetrahedron>& tetra)
 }
 /*===========================================================================================
 	DelaunayEdges
+
 	This procedure generates the list of edges in the Delaunay triangulation
 
  ========================================================================================== */

@@ -122,6 +122,7 @@ int main(int argc, char **argv)
 
 	for(int i = 0; i < natoms; i++) {
 		for(int j = 0; j < 3; j++) coord[3*i+j] = atoms[i].Coordinates[j];
+        std::cout<<"Radius of atom " << i << " is " << atoms[i].Radius<<std::endl;
 		radii[i] = atoms[i].Radius;
 /*
 		coefS[i] = 4 + (i+1)/10.;
@@ -215,6 +216,7 @@ int main(int argc, char **argv)
 
 	}
 */
+
 	delete [] coord; delete [] radii; delete [] coefS; delete [] coefV; delete [] coefM; delete [] coefG;
 	delete [] ballwsurf; delete [] dsurf; delete [] ballwvol; delete [] dvol;
 	delete [] ballwmean; delete [] dmean; delete [] ballwgauss; delete [] dgauss;
@@ -301,8 +303,11 @@ bool parse_args(int argc, char **argv, std::string *INfile, int *flag_ca, double
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {
-
     mod.method("calculate_measures",  [](jlcxx::ArrayRef<double> outs, const jlcxx::ArrayRef<double> in_coordinates, const jlcxx::ArrayRef<double> in_radii, const double in_coefS, const double in_coefV, const double in_coefM, const double in_coefG, const int8_t flag_deriv, const int8_t info_out_flag){
+
+//        for(int i = 0; i < in_coordinates.size()/3; i++) {
+//            std::cout << in_coordinates[i*3] << " " << in_coordinates[(i*3)+1] << " " << in_coordinates[(i*3)+2] << " | " << in_radii[i] << std::endl;
+//        }
         std::vector<Atoms> atoms;
         for(int i = 0; i < in_coordinates.size()/3; i++) {
             Atoms atm(in_coordinates[i*3],
@@ -328,7 +333,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         std::vector<Tetrahedron> tetra;
 
         int natoms = atoms.size();
-
         double *coord = new double[3*natoms];
         double *radii = new double[natoms];
         double *coefS = new double[natoms];

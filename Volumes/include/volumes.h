@@ -20,7 +20,7 @@ with respect to the coordinates of the centers of the ball.
 
 TETRAGEOM tetrageom;
 GAUSSCORNER gauss;
-
+ 
 /* ====================================================================
    class
  ==================================================================== */
@@ -39,6 +39,8 @@ GAUSSCORNER gauss;
 
 	private:
 
+		double safe_acos(double value);
+
 		double distance2(std::vector<Vertex>& vertices, int n1, int n2);
 
 		void twosphere_info(double ra, double ra2, double rb, double rb2,
@@ -48,14 +50,14 @@ GAUSSCORNER gauss;
 		void twosphere_dinfo(double ra, double ra2, double rb, double rb2,
 			double rab, double rab2, double *surfa, double *surfb,
 			double *vola, double *volb, double *r, double *phi, double *l,
-			double *dsurfa, double *dsurfb, double *dvola, double *dvolb,
+			double *dsurfa, double *dsurfb, double *dvola, double *dvolb, 
 			double *dr, double *dphi, double *dl, int option);
 
 		void threesphere_dvol(double ra, double rb,double rc, double ra2,
 			double rb2, double rc2, double rab, double rac, double rbc,
 			double rab2, double rac2, double rbc2, double *angle, double deriv[6][3],
 			double *surfa, double *surfb, double *surfc, double *vola, double *valb,
-			double *volc, double *dsurfa, double *dsurfb, double *dsurfc,
+			double *volc, double *dsurfa, double *dsurfb, double *dsurfc, 
 			double *dvola, double *dvolb, double *dvolc, int option);
 
 		double plane_dist(double ra2, double rb2, double rab2);
@@ -200,13 +202,13 @@ GAUSSCORNER gauss;
 		rc = vertices[ic].Radius; rc2 = rc*rc;
 		rd = vertices[id].Radius; rd2 = rd*rd;
 
-		coefaS = vertices[ia].CoefS; coefaV = vertices[ia].CoefV;
+		coefaS = vertices[ia].CoefS; coefaV = vertices[ia].CoefV; 
 		coefaM = vertices[ia].CoefM; coefaG = vertices[ia].CoefG;
-		coefbS = vertices[ib].CoefS; coefbV = vertices[ib].CoefV;
+		coefbS = vertices[ib].CoefS; coefbV = vertices[ib].CoefV; 
 		coefbM = vertices[ib].CoefM; coefbG = vertices[ib].CoefG;
-		coefcS = vertices[ic].CoefS; coefcV = vertices[ic].CoefV;
+		coefcS = vertices[ic].CoefS; coefcV = vertices[ic].CoefV; 
 		coefcM = vertices[ic].CoefM; coefcG = vertices[ic].CoefG;
-		coefdS = vertices[id].CoefS; coefdV = vertices[id].CoefV;
+		coefdS = vertices[id].CoefS; coefdV = vertices[id].CoefV; 
 		coefdM = vertices[id].CoefM; coefdG = vertices[id].CoefG;
 
 		for(int iedge = 0; iedge < 6; iedge++) {
@@ -289,7 +291,7 @@ GAUSSCORNER gauss;
 		if(option==1) {
 
 /* 			====================================================================
-			Derivative: take into account the derivatives of the edge weight in weighted
+			Derivative: take into account the derivatives of the edge weight in weighted 
 			inclusion-exclusion formula
  			==================================================================== */
 
@@ -309,7 +311,7 @@ GAUSSCORNER gauss;
 			}
 
 /* 			====================================================================
-			Derivative: take into account the derivatives of the vertex weight in weighted
+			Derivative: take into account the derivatives of the vertex weight in weighted 
 			inclusion-exclusion formula
  			==================================================================== */
 
@@ -364,11 +366,11 @@ GAUSSCORNER gauss;
 		|| vertices[ic].status==0 ) continue;
 
 
-		coefaS = vertices[ia].CoefS; coefaV = vertices[ia].CoefV;
+		coefaS = vertices[ia].CoefS; coefaV = vertices[ia].CoefV; 
 		coefaM = vertices[ia].CoefM; coefaG = vertices[ia].CoefG;
-		coefbS = vertices[ib].CoefS; coefbV = vertices[ib].CoefV;
+		coefbS = vertices[ib].CoefS; coefbV = vertices[ib].CoefV; 
 		coefbM = vertices[ib].CoefM; coefbG = vertices[ib].CoefG;
-		coefcS = vertices[ic].CoefS; coefcV = vertices[ic].CoefV;
+		coefcS = vertices[ic].CoefS; coefcV = vertices[ic].CoefV; 
 		coefcM = vertices[ic].CoefM; coefcG = vertices[ic].CoefG;
 
 		e1 = faces[idx].Edges[0];
@@ -384,7 +386,7 @@ GAUSSCORNER gauss;
 		rbc = edges[e3].Length; rbc2=rbc*rbc;
 
 		threesphere_dvol(ra, rb, rc, ra2, rb2, rc2, rab, rac, rbc, rab2, rac2, rbc2,
-		angle, deriv2, &surfa, &surfb, &surfc, &vola, &volb, &volc,
+		angle, deriv2, &surfa, &surfb, &surfc, &vola, &volb, &volc, 
 		dsurfa3, dsurfb3, dsurfc3, dvola3, dvolb3, dvolc3, option);
 
 		gauss.threesphere_dgauss(ra, rb, rc, ra2, rb2, rc2, rab, rac, rbc,
@@ -454,7 +456,7 @@ GAUSSCORNER gauss;
 /* ====================================================================
 	Now add contribution of two-sphere
  ==================================================================== */
-
+					
 	double eps = 1.e-10;
 	for(int iedge = 0; iedge < nedges; iedge++) {
 
@@ -469,9 +471,9 @@ GAUSSCORNER gauss;
 
 		if(vertices[ia].status==0 || vertices[ib].status==0) continue;
 
-		coefaS = vertices[ia].CoefS; coefaV = vertices[ia].CoefV;
+		coefaS = vertices[ia].CoefS; coefaV = vertices[ia].CoefV; 
 		coefaM = vertices[ia].CoefM; coefaG = vertices[ia].CoefG;
-		coefbS = vertices[ib].CoefS; coefbV = vertices[ib].CoefV;
+		coefbS = vertices[ib].CoefS; coefbV = vertices[ib].CoefV; 
 		coefbM = vertices[ib].CoefM; coefbG = vertices[ib].CoefG;
 
 		ra = vertices[ia].Radius; ra2 = ra*ra;
@@ -480,13 +482,13 @@ GAUSSCORNER gauss;
 		rab = edges[iedge].Length; rab2 = rab*rab;
 
 		twosphere_dinfo(ra, ra2, rb, rb2, rab, rab2, &surfa, &surfb,
-		&vola, &volb, &r, &phi, &l, &dsurfa2, &dsurfb2, &dvola2, &dvolb2,
+		&vola, &volb, &r, &phi, &l, &dsurfa2, &dsurfb2, &dvola2, &dvolb2, 
 		&dr, &dphi, &dl, option);
 
-		ballwsurf[ia] -= coefval*surfa;
-		ballwsurf[ib] -= coefval*surfb;
-		ballwvol[ia]  -= coefval*vola;
-		ballwvol[ib]  -= coefval*volb;
+		ballwsurf[ia] -= coefval*surfa; 
+		ballwsurf[ib] -= coefval*surfb; 
+		ballwvol[ia]  -= coefval*vola; 
+		ballwvol[ib]  -= coefval*volb; 
 
 		val = coef_E*pi*coefvalS*r*phi;
 		ballwmean[ia] -= val;
@@ -509,7 +511,7 @@ GAUSSCORNER gauss;
 /* ====================================================================
 	Now loop over vertices
  ==================================================================== */
-
+					
 	for(int i = 4; i < nvertices; i++) {
 
 		coefval = vertices[i].gamma;
@@ -530,7 +532,7 @@ GAUSSCORNER gauss;
 /* ====================================================================
 	Compute total surface, volume (weighted, and unweighted)
  ==================================================================== */
-
+					
 	for(int i = 4; i < nvertices; i++) {
 
 		if(vertices[i].info[0]==0) continue;
@@ -581,9 +583,9 @@ GAUSSCORNER gauss;
 	memset(dvol_coord, 0, 3*nvertices*sizeof(double));
 	memset(dmean_coord, 0, 3*nvertices*sizeof(double));
 	memset(dgauss_coord, 0, 3*nvertices*sizeof(double));
-
+					
 	for(int iedge = 0; iedge < nedges; iedge++) {
-
+		
 		ia = edges[iedge].Vertices[0];
 		ib = edges[iedge].Vertices[1];
 
@@ -658,7 +660,7 @@ GAUSSCORNER gauss;
 	of two balls and the surface area  of the
 	intersection of two corresponding spheres; it is only called when the
 	intersection exists
-
+	
 	Input:
 			rab	: distance between the centers of the 2 spheres
 			rab2	: distance between the centers of the 2 spheres
@@ -733,14 +735,14 @@ GAUSSCORNER gauss;
 	Get radius of the circle of intersection between the two spheres
  ==================================================================== */
 
-	*r = std::sqrt(ra2 - vala*vala);
+	*r = std::sqrt(std::abs(ra2 - vala*vala));
 
 /* ====================================================================
 	Get angle between normals of the sphere at a point on this circle
  ==================================================================== */
 
 	cosine = (ra2+rb2-rab2)/(2.0*ra*rb);
-	*phi = std::acos(cosine);
+	*phi = safe_acos(cosine);
 
 	*l = vala/ra + valb/rb;
 
@@ -754,7 +756,7 @@ GAUSSCORNER gauss;
 
 	It also computes the derivatives of the surface area
 	and volume with respect to the distance between the two centers
-
+	
 	Input:
 			rab	: distance between the centers of the 2 spheres
 			rab2	: distance between the centers of the 2 spheres
@@ -782,7 +784,7 @@ GAUSSCORNER gauss;
   void VOLUMES::twosphere_dinfo(double ra, double ra2, double rb, double rb2,
 		double rab, double rab2, double *surfa, double *surfb,
 		double *vola, double *volb, double *r, double *phi, double *l,
-		double *dsurfa, double *dsurfb, double *dvola, double *dvolb,
+		double *dsurfa, double *dsurfb, double *dvola, double *dvolb, 
 		double *dr, double *dphi, double *dl, int option)
   {
 
@@ -838,14 +840,14 @@ GAUSSCORNER gauss;
 	Get radius of the circle of intersection between the two spheres
  ==================================================================== */
 
-	*r = std::sqrt(ra2 - vala*vala);
+	*r = std::sqrt(std::abs(ra2 - vala*vala));
 
 /* ====================================================================
 	Get angle between normals of the sphere at a point on this circle
  ==================================================================== */
 
 	cosine = (ra2+rb2-rab2)/(2.0*ra*rb);
-	*phi = std::acos(cosine);
+	*phi = safe_acos(cosine);
 	*l = vala/ra + valb/rb;
 
 	if(option==0) return;
@@ -860,7 +862,11 @@ GAUSSCORNER gauss;
 	*dvolb = -(*dvola) - Aab;
 
 	*dr   = -vala*lambda/(*r);
-	*dphi = rab/(ra*rb*std::sqrt(1-cosine*cosine));
+	if(*phi==0 || *phi==pi) {
+		*dphi=0;
+	} else {
+		*dphi = rab/(ra*rb*std::sqrt(1-cosine*cosine));
+	}
 	*dl   = lambda/ra + (1.0-lambda)/rb;
 
   }
@@ -868,7 +874,7 @@ GAUSSCORNER gauss;
 /* ====================================================================
 	threesphere_dvol
 
-	This procedure computes the surface area and volume of the intersection
+	This procedure computes the surface area and volume of the intersection 
 	of three spheres; it is only called when the intersection exists
 
 	It also computes the derivatives of the surface areas and volumes with respect
@@ -932,7 +938,7 @@ GAUSSCORNER gauss;
 	The edge lengths in this tetrahedron are: rab, rac, rAP=ra, rbc, rBP=rb, rCP=rc
  ==================================================================== */
 
-	tetrageom.tetra_dihed_der3(rab2, rac2, ra2, rbc2, rb2, rc2, angle,
+	tetrageom.tetra_dihed_der3(rab2, rac2, ra2, rbc2, rb2, rc2, angle, 
 		cosine, sine, deriv, option);
 
 /* ====================================================================
@@ -1057,42 +1063,58 @@ GAUSSCORNER gauss;
 	val2_acb = rho_ac2*(1 - cos_acb*cos_acb + sin_acb*sin_acb);
 	val2_bca = rho_bc2*(1 - cos_bca*cos_bca + sin_bca*sin_bca);
 
-	dvola[0] = ra*dsurfa[0] - der_val1b*s_abc -
+	dvola[0] = ra*dsurfa[0] - der_val1b*s_abc - 
 		(val1b*deriv[0][0]*val2_abc + val2b*deriv[1][0]*val2_acb)
 		- val1b*drho_ab2*val_abc;
 	dvola[0] = dvola[0]/3;
-	dvola[1] = ra*dsurfa[1] - der_val2b*s_acb -
+	dvola[1] = ra*dsurfa[1] - der_val2b*s_acb - 
 		(val1b*deriv[0][1]*val2_abc + val2b*deriv[1][1]*val2_acb)
 		- val2b*drho_ac2*val_acb;
 	dvola[1] = dvola[1]/3;
-	dvola[2] = ra*dsurfa[2] -
+	dvola[2] = ra*dsurfa[2] - 
 		(val1b*deriv[0][2]*val2_abc + val2b*deriv[1][2]*val2_acb);
 	dvola[2] = dvola[2]/3;
 
-	dvolb[0] = rb*dsurfb[0] - der_val1*s_abc -
+	dvolb[0] = rb*dsurfb[0] - der_val1*s_abc - 
 		(val1*deriv[0][0]*val2_abc + val3b*deriv[3][0]*val2_bca)
 		- val1*drho_ab2*val_abc;
 	dvolb[0] = dvolb[0]/3;
-	dvolb[1] = rb*dsurfb[1] -
+	dvolb[1] = rb*dsurfb[1] - 
 		(val1*deriv[0][1]*val2_abc + val3b*deriv[3][1]*val2_bca);
 	dvolb[1] = dvolb[1]/3;
-	dvolb[2] = rb*dsurfb[2] - der_val3b*s_bca -
+	dvolb[2] = rb*dsurfb[2] - der_val3b*s_bca - 
 		(val1*deriv[0][2]*val2_abc + val3b*deriv[3][2]*val2_bca)
 		- val3b*drho_bc2*val_bca;
 	dvolb[2] = dvolb[2]/3;
 
-	dvolc[0] = rc*dsurfc[0] -
+	dvolc[0] = rc*dsurfc[0] - 
 		(val2*deriv[1][0]*val2_acb + val3*deriv[3][0]*val2_bca);
 	dvolc[0] = dvolc[0]/3;
-	dvolc[1] = rc*dsurfc[1] - der_val2*s_acb -
+	dvolc[1] = rc*dsurfc[1] - der_val2*s_acb - 
 		(val2*deriv[1][1]*val2_acb + val3*deriv[3][1]*val2_bca)
 		- val2*drho_ac2*val_acb;
 	dvolc[1] = dvolc[1]/3;
-	dvolc[2] = rc*dsurfc[2] - der_val3*s_bca -
+	dvolc[2] = rc*dsurfc[2] - der_val3*s_bca - 
 		(val2*deriv[1][2]*val2_acb + val3*deriv[3][2]*val2_bca)
 		- val3*drho_bc2*val_bca;
 	dvolc[2] = dvolc[2]/3;
 
   }
+
+/* ====================================================================
+   Safe acos function
+ ==================================================================== */
+
+  double VOLUMES::safe_acos(double value) 
+  {
+
+	if (value<=-1.0) {
+		return pi;
+	} else if (value>=1.0) {
+		return 0;
+	} else {
+		return std::acos(value);
+	}
+}
 
 #endif
