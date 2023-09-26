@@ -176,6 +176,7 @@
 		if(line.find("#") == std::string::npos) {
 			sscanf(line.c_str(), "%lf %lf %lf %lf", &x, &y, &z, &r);
 			r += rad_H2O;
+
 			Atoms atm(x, y, z, r, asp, asp, asp, asp);
 			atoms.push_back(atm);
 		}

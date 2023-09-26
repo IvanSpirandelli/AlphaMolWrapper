@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 	std::string INfile;
 	std::string OUTfile;
 	int flag_CA;
-	double r_h2o = 0.0;
+	double r_h2o = 1.4;
 	int flag_deriv = 0;
 
         if (!parse_args(argc, argv, &INfile, &flag_CA, &r_h2o, &flag_deriv,
@@ -72,12 +72,12 @@ int main(int argc, char **argv)
 /*	==========================================================================================
 	Read in molecule
 	========================================================================================== */
-
 	ReadInput read;
 
 	std::vector<Atoms> atoms;
 
 	std::size_t found = INfile.find("crd");
+
 	if(found !=std::string::npos) {
 		read.readFromCRD(INfile, atoms, r_h2o);
 	} else {
@@ -122,14 +122,8 @@ int main(int argc, char **argv)
 
 	for(int i = 0; i < natoms; i++) {
 		for(int j = 0; j < 3; j++) coord[3*i+j] = atoms[i].Coordinates[j];
-        std::cout<<"Radius of atom " << i << " is " << atoms[i].Radius<<std::endl;
 		radii[i] = atoms[i].Radius;
-/*
-		coefS[i] = 4 + (i+1)/10.;
-		coefV[i] = 3 + (i+1)/10.;
-		coefM[i] = 2 + (i+1)/10.;
-		coefG[i] = 1 + (i+1)/10.;
-*/
+
 		coefS[i] = 1.0;
 		coefV[i] = 1.0;
 		coefM[i] = 1.0;
@@ -193,29 +187,31 @@ int main(int argc, char **argv)
 
 	std::cout << "Volumes compute time : " << (stop_s-start_s)/double(CLOCKS_PER_SEC) << " seconds" << std::endl;
 
-	std::cout << " " << std::endl;
-	std::cout << "Biomolecule from file      : " << INfile << std::endl;
-	std::cout << "Number of atoms (balls)    : " << natoms << std::endl;
-	std::cout << "Probe radius               : " << r_h2o << std::endl;
-	std::cout << "Unweighted surface area    : " << std::setw(16) << std::fixed << std::setprecision(8) << Surf << std::endl;
-	std::cout << "Weighted surface area      : " << std::setw(16) << std::fixed << std::setprecision(8) << WSurf << std::endl;
-	std::cout << "Unweighted volume          : " << std::setw(16) << std::fixed << std::setprecision(8) << Vol << std::endl;
-	std::cout << "Weighted volume            : " << std::setw(16) << std::fixed << std::setprecision(8) << WVol << std::endl;
-	std::cout << "Unweighted mean curvature  : " << std::setw(16) << std::fixed << std::setprecision(8) << Mean << std::endl;
-	std::cout << "Weighted mean curvature    : " << std::setw(16) << std::fixed << std::setprecision(8) << WMean << std::endl;
-	std::cout << "Unweighted Gauss curvature : " << std::setw(16) << std::fixed << std::setprecision(8) << Gauss << std::endl;
-	std::cout << "Weighted Gauss curvature   : " << std::setw(16) << std::fixed << std::setprecision(8) << WGauss << std::endl;
-	std::cout << " " << std::endl;
+    for(int i = 0; i < natoms; i++) {
+        std::cout << dsurf[3*i] << " " << dsurf[3*i+1] << " " << dsurf[3*i+2] << std::endl;
+    }
 
-    /*
-	if(flag_deriv == 1) {
+//	std::cout << " " << std::endl;
+//	std::cout << "Biomolecule from file      : " << INfile << std::endl;
+//	std::cout << "Number of atoms (balls)    : " << natoms << std::endl;
+//	std::cout << "Probe radius               : " << r_h2o << std::endl;
+//	std::cout << "Unweighted surface area    : " << std::setw(16) << std::fixed << std::setprecision(8) << Surf << std::endl;
+//	std::cout << "Weighted surface area      : " << std::setw(16) << std::fixed << std::setprecision(8) << WSurf << std::endl;
+//	std::cout << "Unweighted volume          : " << std::setw(16) << std::fixed << std::setprecision(8) << Vol << std::endl;
+//	std::cout << "Weighted volume            : " << std::setw(16) << std::fixed << std::setprecision(8) << WVol << std::endl;
+//	std::cout << "Unweighted mean curvature  : " << std::setw(16) << std::fixed << std::setprecision(8) << Mean << std::endl;
+//	std::cout << "Weighted mean curvature    : " << std::setw(16) << std::fixed << std::setprecision(8) << WMean << std::endl;
+//	std::cout << "Unweighted Gauss curvature : " << std::setw(16) << std::fixed << std::setprecision(8) << Gauss << std::endl;
+//	std::cout << "Weighted Gauss curvature   : " << std::setw(16) << std::fixed << std::setprecision(8) << WGauss << std::endl;
+//	std::cout << " " << std::endl;
 
-		std::cout << "Compare analytical with numerical derivatives: " << std::endl;
-		CheckDeriv(natoms, coord, radii, coefS, coefV, coefM, coefG,
-		dsurf, dvol, dmean, dgauss);
-
-	}
-*/
+//	if(flag_deriv == 1) {
+//
+//		std::cout << "Compare analytical with numerical derivatives: " << std::endl;
+//		CheckDeriv(natoms, coord, radii, coefS, coefV, coefM, coefG,
+//		dsurf, dvol, dmean, dgauss);
+//
+//	}
 
 	delete [] coord; delete [] radii; delete [] coefS; delete [] coefV; delete [] coefM; delete [] coefG;
 	delete [] ballwsurf; delete [] dsurf; delete [] ballwvol; delete [] dvol;
@@ -305,9 +301,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {
     mod.method("calculate_measures",  [](jlcxx::ArrayRef<double> outs, const jlcxx::ArrayRef<double> in_coordinates, const jlcxx::ArrayRef<double> in_radii, const double in_coefS, const double in_coefV, const double in_coefM, const double in_coefG, const int8_t flag_deriv, const int8_t info_out_flag){
 
-//        for(int i = 0; i < in_coordinates.size()/3; i++) {
-//            std::cout << in_coordinates[i*3] << " " << in_coordinates[(i*3)+1] << " " << in_coordinates[(i*3)+2] << " | " << in_radii[i] << std::endl;
-//        }
         std::vector<Atoms> atoms;
         for(int i = 0; i < in_coordinates.size()/3; i++) {
             Atoms atm(in_coordinates[i*3],
@@ -316,11 +309,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                       in_radii[i],
                       1.0, 1.0, 1.0, 1.0);
             atoms.push_back(atm);
-        }
-        if(info_out_flag >= 1) {
-            std::cout << " " << std::endl;
-            std::cout << "Number of atoms (balls)   : " << atoms.size() << std::endl;
-            std::cout << " " << std::endl;
         }
 
         /*	==========================================================================================
@@ -355,33 +343,15 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 
         delcx.setup(natoms, coord, radii, coefS, coefV, coefM, coefG, vertices, tetra);
 
-        if(info_out_flag >= 1) {
-            start_s = clock();
-        }
-
         delcx.regular3D(vertices, tetra);
-
-        if(info_out_flag >= 1) {
-            stop_s = clock();
-            std::cout << "Delaunay compute time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC) << " seconds" << std::endl;
-        }
-
 
         /*	==========================================================================================
             Generate alpha complex (with alpha=0.0)
             ========================================================================================== */
-        if(info_out_flag >= 1) {
-            start_s = clock();
-        }
 
         double alpha = 0;
         alfcx.alfcx(alpha, vertices, tetra);
 
-        if(info_out_flag >= 1) {
-            stop_s = clock();
-            std::cout << "AlphaCx compute time : " << (stop_s - start_s) / double(CLOCKS_PER_SEC) << " seconds"
-                      << std::endl;
-        }
         /*	==========================================================================================
             Compute surface area and, optionally volume of the union of balls.
             If requested, compute also their derivatives
@@ -414,43 +384,12 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         dgauss = new double[3*(natoms+nfudge)];
         memset(dgauss, 0, 3*(natoms+nfudge)*sizeof(double));
 
-        if(info_out_flag >= 1) {
-            start_s = clock();
-        }
-
         volumes.ball_dvolumes(vertices, tetra, edges, faces, &WSurf, &WVol,
                               &WMean, &WGauss, &Surf, &Vol, &Mean, &Gauss, ballwsurf, ballwvol,
                               ballwmean, ballwgauss, dsurf, dvol, dmean, dgauss, flag_deriv);
 
-        if(info_out_flag >= 1) {
-            stop_s = clock();
-            std::cout << "Volumes compute time : " << (stop_s - start_s) / double(CLOCKS_PER_SEC) << " seconds"
-                      << std::endl;
-        }
-
-        if(info_out_flag >= 2) {
-            std::cout << " " << std::endl;
-            std::cout << "Unweighted surface area    : " << std::setw(16) << std::fixed << std::setprecision(8) << Surf
-                      << std::endl;
-            std::cout << "Weighted surface area      : " << std::setw(16) << std::fixed << std::setprecision(8) << WSurf
-                      << std::endl;
-            std::cout << "Unweighted volume          : " << std::setw(16) << std::fixed << std::setprecision(8) << Vol
-                      << std::endl;
-            std::cout << "Weighted volume            : " << std::setw(16) << std::fixed << std::setprecision(8) << WVol
-                      << std::endl;
-            std::cout << "Unweighted mean curvature  : " << std::setw(16) << std::fixed << std::setprecision(8) << Mean
-                      << std::endl;
-            std::cout << "Weighted mean curvature    : " << std::setw(16) << std::fixed << std::setprecision(8) << WMean
-                      << std::endl;
-            std::cout << "Unweighted Gauss curvature : " << std::setw(16) << std::fixed << std::setprecision(8) << Gauss
-                      << std::endl;
-            std::cout << "Weighted Gauss curvature   : " << std::setw(16) << std::fixed << std::setprecision(8) << WGauss
-                      << std::endl;
-            std::cout << " " << std::endl;
-        }
-
-        outs[0] = Surf;
-        outs[1] = Vol;
+        outs[0] = Vol;
+        outs[1] = Surf;
         outs[2] = Mean;
         outs[3] = Gauss;
 
@@ -460,8 +399,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     });
 
     mod.method("calculate_measures_and_derivatives",  [](jlcxx::ArrayRef<double> measures_out,
-            jlcxx::ArrayRef<double> dsurf_out,
             jlcxx::ArrayRef<double> dvol_out,
+            jlcxx::ArrayRef<double> dsurf_out,
             jlcxx::ArrayRef<double> dmean_out,
             jlcxx::ArrayRef<double> dgauss_out,
             const jlcxx::ArrayRef<double> in_coordinates, const jlcxx::ArrayRef<double> in_radii, const double in_coefS, const double in_coefV, const double in_coefM, const double in_coefG, const int8_t flag_deriv, const int8_t info_out_flag){
@@ -474,11 +413,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                       1.0, 1.0, 1.0, 1.0);
             atoms.push_back(atm);
         }
-        if(info_out_flag >= 1) {
-            std::cout << " " << std::endl;
-            std::cout << "Number of atoms (balls)   : " << atoms.size() << std::endl;
-            std::cout << " " << std::endl;
-        }
 
         /*	==========================================================================================
             Compute Delaunay triangulation
@@ -513,33 +447,15 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 
         delcx.setup(natoms, coord, radii, coefS, coefV, coefM, coefG, vertices, tetra);
 
-        if(info_out_flag >= 1) {
-            start_s = clock();
-        }
-
         delcx.regular3D(vertices, tetra);
-
-        if(info_out_flag >= 1) {
-            stop_s = clock();
-            std::cout << "Delaunay compute time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC) << " seconds" << std::endl;
-        }
-
 
         /*	==========================================================================================
             Generate alpha complex (with alpha=0.0)
             ========================================================================================== */
-        if(info_out_flag >= 1) {
-            start_s = clock();
-        }
 
         double alpha = 0;
         alfcx.alfcx(alpha, vertices, tetra);
 
-        if(info_out_flag >= 1) {
-            stop_s = clock();
-            std::cout << "AlphaCx compute time : " << (stop_s - start_s) / double(CLOCKS_PER_SEC) << " seconds"
-                      << std::endl;
-        }
         /*	==========================================================================================
             Compute surface area and, optionally volume of the union of balls.
             If requested, compute also their derivatives
@@ -553,14 +469,16 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         double Surf, WSurf, Vol, WVol, Mean, WMean, Gauss, WGauss;
 
         int nfudge = 8;
-        double *ballwsurf = new double[natoms+nfudge];
-        double *dsurf = new double[3*(natoms+nfudge)];
-        memset(dsurf, 0, 3*(natoms+nfudge)*sizeof(double));
 
         double *ballwvol, *dvol;
         ballwvol = new double[natoms+nfudge];
         dvol = new double[3*(natoms+nfudge)];
         memset(dvol, 0, 3*(natoms+nfudge)*sizeof(double));
+
+        double *ballwsurf = new double[natoms+nfudge];
+        double *dsurf = new double[3*(natoms+nfudge)];
+        memset(dsurf, 0, 3*(natoms+nfudge)*sizeof(double));
+
 
         double *ballwmean, *dmean;
         ballwmean = new double[natoms+nfudge];
@@ -572,49 +490,18 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         dgauss = new double[3*(natoms+nfudge)];
         memset(dgauss, 0, 3*(natoms+nfudge)*sizeof(double));
 
-        if(info_out_flag >= 1) {
-            start_s = clock();
-        }
-
         volumes.ball_dvolumes(vertices, tetra, edges, faces, &WSurf, &WVol,
                               &WMean, &WGauss, &Surf, &Vol, &Mean, &Gauss, ballwsurf, ballwvol,
                               ballwmean, ballwgauss, dsurf, dvol, dmean, dgauss, flag_deriv);
 
-        if(info_out_flag >= 1) {
-            stop_s = clock();
-            std::cout << "Volumes compute time : " << (stop_s - start_s) / double(CLOCKS_PER_SEC) << " seconds"
-                      << std::endl;
-        }
-
-        if(info_out_flag >= 2) {
-            std::cout << " " << std::endl;
-            std::cout << "Unweighted surface area    : " << std::setw(16) << std::fixed << std::setprecision(8) << Surf
-                      << std::endl;
-            std::cout << "Weighted surface area      : " << std::setw(16) << std::fixed << std::setprecision(8) << WSurf
-                      << std::endl;
-            std::cout << "Unweighted volume          : " << std::setw(16) << std::fixed << std::setprecision(8) << Vol
-                      << std::endl;
-            std::cout << "Weighted volume            : " << std::setw(16) << std::fixed << std::setprecision(8) << WVol
-                      << std::endl;
-            std::cout << "Unweighted mean curvature  : " << std::setw(16) << std::fixed << std::setprecision(8) << Mean
-                      << std::endl;
-            std::cout << "Weighted mean curvature    : " << std::setw(16) << std::fixed << std::setprecision(8) << WMean
-                      << std::endl;
-            std::cout << "Unweighted Gauss curvature : " << std::setw(16) << std::fixed << std::setprecision(8) << Gauss
-                      << std::endl;
-            std::cout << "Weighted Gauss curvature   : " << std::setw(16) << std::fixed << std::setprecision(8) << WGauss
-                      << std::endl;
-            std::cout << " " << std::endl;
-        }
-
-        measures_out[0] = Surf;
-        measures_out[1] = Vol;
+        measures_out[0] = Vol;
+        measures_out[1] = Surf;
         measures_out[2] = Mean;
         measures_out[3] = Gauss;
 
         for(int i = 0; i < natoms*3; i++){
-            dsurf_out[i] = dsurf[i];
             dvol_out[i] = dvol[i];
+            dsurf_out[i] = dsurf[i];
             dmean_out[i] = dmean[i];
             dgauss_out[i] = dgauss[i];
         }
