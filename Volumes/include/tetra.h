@@ -41,13 +41,13 @@
                            double rbd2, double rcd2, double *cos_ang, double *sin_ang,
                            double *vola, double *volb, double *volc, double *vold);
 
-		void tetra_Voronoi_der(double ra2,double rb2,double rc2,double rd2,
-			double rab, double rac, double rad, double rbc, double rbd,
-			double rcd, double rab2, double rac2, double rad2,double rbc2,
-			double rbd2, double rcd2, double *cos_ang, double *sin_ang,
-			double deriv[6][6], double *vola, double *volb, double *volc, 
-			double *vold, double *dvola, double *dvolb, double *dvolc,
-			double *dvold, int option);
+		void tetra_Voronoi_der(double ra2, double rb2, double rc2, double rd2,
+                               double rab, double rac, double rad, double rbc, double rbd,
+                               double rcd, double rab2, double rac2, double rad2_, double rbc2,
+                               double rbd2, double rcd2, double *cos_ang, double *sin_ang,
+                               double deriv[6][6], double *vola, double *volb, double *volc,
+                               double *vold, double *dvola, double *dvolb, double *dvolc,
+                               double *dvold, int option);
 
 		double plane_dist(double ra2, double rb2, double rab2);
 
@@ -1069,7 +1069,7 @@ double TETRAGEOM::tetra_volume(double r12sq, double r13sq, double r14sq,
 		ra2,rb2,rc2,rd2 : radii squared
 		rab,rac,rad,
 		rbc,rbd,rcd	: all 6 distances between ball centers
-		rab2,rac2,rad2,
+		rab2,rac2,rad2_,
 		rbc2,rbd2,rcd2	: all 6 distances between ball centers
 		cos_ang		: cosine of the 6 dihedral angles of the
 				  tetrahedron
@@ -1088,13 +1088,13 @@ double TETRAGEOM::tetra_volume(double r12sq, double r13sq, double r14sq,
 		dvold		: derivatives of vold wrt the six edge lengths
  ==================================================================== */
 
-  void TETRAGEOM::tetra_Voronoi_der(double ra2,double rb2,double rc2,double rd2,
-	double rab, double rac, double rad, double rbc, double rbd,
-	double rcd, double rab2, double rac2, double rad2,double rbc2,
-	double rbd2, double rcd2, double *cos_ang, double *sin_ang,
-	double deriv[6][6], double *vola, double *volb, double *volc, 
-	double *vold, double *dvola, double *dvolb, double *dvolc, double *dvold,
-	int option)
+  void TETRAGEOM::tetra_Voronoi_der(double ra2, double rb2, double rc2, double rd2,
+                                    double rab, double rac, double rad, double rbc, double rbd,
+                                    double rcd, double rab2, double rac2, double rad2_, double rbc2,
+                                    double rbd2, double rcd2, double *cos_ang, double *sin_ang,
+                                    double deriv[6][6], double *vola, double *volb, double *volc,
+                                    double *vold, double *dvola, double *dvolb, double *dvolc, double *dvold,
+                                    int option)
 
   {
 
@@ -1127,7 +1127,7 @@ double TETRAGEOM::tetra_volume(double r12sq, double r13sq, double r14sq,
 
 	l1 = plane_dist(ra2, rb2, rab2);
 	l2 = plane_dist(ra2, rc2, rac2);
-	l3 = plane_dist(ra2, rd2, rad2);
+	l3 = plane_dist(ra2, rd2, rad2_);
 	l4 = plane_dist(rb2, rc2, rbc2);
 	l5 = plane_dist(rb2, rd2, rbd2);
 	l6 = plane_dist(rc2, rd2, rcd2);
@@ -1151,15 +1151,15 @@ double TETRAGEOM::tetra_volume(double r12sq, double r13sq, double r14sq,
 	Repeat for tetrahedron (A,B,D,P_ABD)
  ==================================================================== */
 
-	tetra_3dihed_dcos(rab2, rad2, ra2, rbd2, rb2, rd2, cosine_abd,
-		deriv_abd, option);
+	tetra_3dihed_dcos(rab2, rad2_, ra2, rbd2, rb2, rd2, cosine_abd,
+                      deriv_abd, option);
 
 /* ====================================================================
 	Repeat for tetrahedron (A,C,D,P_ACD)
  ==================================================================== */
 
-	tetra_3dihed_dcos(rac2, rad2, ra2, rcd2, rc2, rd2, cosine_acd,
-		deriv_acd, option);
+	tetra_3dihed_dcos(rac2, rad2_, ra2, rcd2, rc2, rd2, cosine_acd,
+                      deriv_acd, option);
 
 /* ====================================================================
 	Repeat for tetrahedron (B,C,D,P_BCD)
