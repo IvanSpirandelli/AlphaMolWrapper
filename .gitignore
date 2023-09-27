@@ -16,3 +16,5 @@ CMakeCache.txt
 
 # Excluding Valgrind Output
 valgrind-out.txt
+
+Makefile

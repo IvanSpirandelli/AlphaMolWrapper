@@ -52,7 +52,7 @@ target_link_libraries(alphamolwrapper gmp JlCxx::cxxwrap_julia)
 #target_link_libraries(AlphaMolExecutable JlCxx::cxxwrap_julia gmp)
 
 install(TARGETS
-  algoimwrapper
+        alphamolwrapper
 LIBRARY DESTINATION lib
 ARCHIVE DESTINATION lib
 RUNTIME DESTINATION lib)
