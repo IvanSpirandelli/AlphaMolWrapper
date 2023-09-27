@@ -50,3 +50,9 @@ add_library(alphamolwrapper SHARED ${ALPHAMOL_SOURCE})
 target_link_libraries(alphamolwrapper gmp JlCxx::cxxwrap_julia)
 #add_executable(AlphaMolExecutable ${ALPHAMOL_SOURCE})
 #target_link_libraries(AlphaMolExecutable JlCxx::cxxwrap_julia gmp)
+
+install(TARGETS
+  algoimwrapper
+LIBRARY DESTINATION lib
+ARCHIVE DESTINATION lib
+RUNTIME DESTINATION lib)
