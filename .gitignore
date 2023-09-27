@@ -1,7 +1,7 @@
 # Excluding standard binary paths
 /bin
 /project/src/AlphaMol.o
-libAlphaMol.so
+*.so
 AlphaMolStatic*
 
 AlphaMolExecutable
