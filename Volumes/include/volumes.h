@@ -87,7 +87,7 @@ GAUSSCORNER gauss;
 
 	double  ra, ra2, rb, rb2, rc, rc2, rd, rd2;
 	double	rab, rac, rad, rbc, rbd, rcd;
-	double	rab2, rac2, rad2, rbc2, rbd2, rcd2;
+	double	rab2, rac2, rad2_, rbc2, rbd2, rcd2;
 	double	val, val1S, val2S, val3S, val4S;
 	double  val1M1, val2M1, val3M1, val4M1;
 	double  val1G1;
@@ -229,7 +229,7 @@ GAUSSCORNER gauss;
 
 		rab = edges[edge_list[0]].Length; rab2 = rab*rab;
 		rac = edges[edge_list[1]].Length; rac2 = rac*rac;
-		rad = edges[edge_list[2]].Length; rad2 = rad*rad;
+		rad = edges[edge_list[2]].Length; rad2_ = rad * rad;
 		rbc = edges[edge_list[3]].Length; rbc2 = rbc*rbc;
 		rbd = edges[edge_list[4]].Length; rbd2 = rbd*rbd;
 		rcd = edges[edge_list[5]].Length; rcd2 = rcd*rcd;
@@ -239,11 +239,11 @@ GAUSSCORNER gauss;
  		==================================================================== */
 
 		if(option==0) {
-			tetrageom.tetra_dihed(rab2, rac2, rad2, rbc2, rbd2, rcd2,
-			angle, cosine, sine);
+			tetrageom.tetra_dihed(rab2, rac2, rad2_, rbc2, rbd2, rcd2,
+                                  angle, cosine, sine);
 		} else {
-			tetrageom.tetra_dihed_der(rab2, rac2, rad2, rbc2, rbd2, rcd2,
-			angle, cosine, sine, deriv);
+			tetrageom.tetra_dihed_der(rab2, rac2, rad2_, rbc2, rbd2, rcd2,
+                                      angle, cosine, sine, deriv);
 		}
 
 /* 		====================================================================
@@ -251,8 +251,8 @@ GAUSSCORNER gauss;
  		==================================================================== */
 
 		tetrageom.tetra_Voronoi_der(ra2, rb2, rc2, rd2, rab, rac, rad, rbc,
-		rbd, rcd, rab2, rac2, rad2, rbc2, rbd2, rcd2, cosine, sine,
-		deriv, &vola, &volb, &volc, &vold, dvola, dvolb, dvolc, dvold, option);
+                                    rbd, rcd, rab2, rac2, rad2_, rbc2, rbd2, rcd2, cosine, sine,
+                                    deriv, &vola, &volb, &volc, &vold, dvola, dvolb, dvolc, dvold, option);
 
 		ballwvol[ia] += vola; ballwvol[ib] += volb;
 		ballwvol[ic] += volc; ballwvol[id] += vold;
