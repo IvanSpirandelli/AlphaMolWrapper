@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1.0)
 project(alphamol)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 9)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Try to find the GNU Multiple Precision Arithmetic Library (GMP)
@@ -48,8 +48,8 @@ file(GLOB ALPHAMOL_SOURCE "project/src/*.cpp")
 include_directories(${ALPHAMOL_INCLUDE_DIRS} ${GMP_INCLUDE_DIR})
 add_library(alphamolwrapper SHARED ${ALPHAMOL_SOURCE})
 target_link_libraries(alphamolwrapper gmp JlCxx::cxxwrap_julia)
-#add_executable(AlphaMolExecutable ${ALPHAMOL_SOURCE})
-#target_link_libraries(AlphaMolExecutable JlCxx::cxxwrap_julia gmp)
+add_executable(AlphaMol ${ALPHAMOL_SOURCE})
+target_link_libraries(AlphaMol JlCxx::cxxwrap_julia gmp)
 
 install(TARGETS
         alphamolwrapper

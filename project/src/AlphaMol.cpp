@@ -191,35 +191,31 @@ int main(int argc, char **argv)
         std::cout << dsurf[3*i] << " " << dsurf[3*i+1] << " " << dsurf[3*i+2] << std::endl;
     }
 
-//	std::cout << " " << std::endl;
-//	std::cout << "Biomolecule from file      : " << INfile << std::endl;
-//	std::cout << "Number of atoms (balls)    : " << natoms << std::endl;
-//	std::cout << "Probe radius               : " << r_h2o << std::endl;
-//	std::cout << "Unweighted surface area    : " << std::setw(16) << std::fixed << std::setprecision(8) << Surf << std::endl;
-//	std::cout << "Weighted surface area      : " << std::setw(16) << std::fixed << std::setprecision(8) << WSurf << std::endl;
-//	std::cout << "Unweighted volume          : " << std::setw(16) << std::fixed << std::setprecision(8) << Vol << std::endl;
-//	std::cout << "Weighted volume            : " << std::setw(16) << std::fixed << std::setprecision(8) << WVol << std::endl;
-//	std::cout << "Unweighted mean curvature  : " << std::setw(16) << std::fixed << std::setprecision(8) << Mean << std::endl;
-//	std::cout << "Weighted mean curvature    : " << std::setw(16) << std::fixed << std::setprecision(8) << WMean << std::endl;
-//	std::cout << "Unweighted Gauss curvature : " << std::setw(16) << std::fixed << std::setprecision(8) << Gauss << std::endl;
-//	std::cout << "Weighted Gauss curvature   : " << std::setw(16) << std::fixed << std::setprecision(8) << WGauss << std::endl;
-//	std::cout << " " << std::endl;
+	std::cout << " " << std::endl;
+	std::cout << "Biomolecule from file      : " << INfile << std::endl;
+	std::cout << "Number of atoms (balls)    : " << natoms << std::endl;
+	std::cout << "Probe radius               : " << r_h2o << std::endl;
+	std::cout << "Unweighted surface area    : " << std::setw(16) << std::fixed << std::setprecision(8) << Surf << std::endl;
+	std::cout << "Weighted surface area      : " << std::setw(16) << std::fixed << std::setprecision(8) << WSurf << std::endl;
+	std::cout << "Unweighted volume          : " << std::setw(16) << std::fixed << std::setprecision(8) << Vol << std::endl;
+	std::cout << "Weighted volume            : " << std::setw(16) << std::fixed << std::setprecision(8) << WVol << std::endl;
+	std::cout << "Unweighted mean curvature  : " << std::setw(16) << std::fixed << std::setprecision(8) << Mean << std::endl;
+	std::cout << "Weighted mean curvature    : " << std::setw(16) << std::fixed << std::setprecision(8) << WMean << std::endl;
+	std::cout << "Unweighted Gauss curvature : " << std::setw(16) << std::fixed << std::setprecision(8) << Gauss << std::endl;
+	std::cout << "Weighted Gauss curvature   : " << std::setw(16) << std::fixed << std::setprecision(8) << WGauss << std::endl;
+	std::cout << " " << std::endl;
 
-//	if(flag_deriv == 1) {
-//
-//		std::cout << "Compare analytical with numerical derivatives: " << std::endl;
-//		CheckDeriv(natoms, coord, radii, coefS, coefV, coefM, coefG,
-//		dsurf, dvol, dmean, dgauss);
-//
-//	}
+	if(flag_deriv == 1) {
+
+		std::cout << "Compare analytical with numerical derivatives: " << std::endl;
+		CheckDeriv(natoms, coord, radii, coefS, coefV, coefM, coefG,
+		dsurf, dvol, dmean, dgauss);
+
+	}
 
 	delete [] coord; delete [] radii; delete [] coefS; delete [] coefV; delete [] coefM; delete [] coefG;
 	delete [] ballwsurf; delete [] dsurf; delete [] ballwvol; delete [] dvol;
 	delete [] ballwmean; delete [] dmean; delete [] ballwgauss; delete [] dgauss;
-
-    delete [] coord; delete [] radii; delete [] coefS; delete [] coefV; delete [] coefM; delete [] coefG;
-    delete [] ballwsurf; delete [] dsurf; delete [] ballwvol; delete [] dvol;
-    delete [] ballwmean; delete [] dmean; delete [] ballwgauss; delete [] dgauss;
 
 	return 0;
 
