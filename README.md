@@ -13,7 +13,6 @@ module AlphaMolWrap
 
     function __init__()
         @initcxx
-
     end
 end
 
