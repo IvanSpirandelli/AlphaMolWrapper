@@ -9,8 +9,7 @@ module AlphaMolWrap
     using CxxWrap
     using AlphaMolWrapper_jll
 
-    #@wrapmodule(() -> libalphamolwrapper)
-    @wrapmodule(() -> joinpath("assets","libalphamolwrapper"))
+    @wrapmodule(() -> libalphamolwrapper)
 
     function __init__()
         @initcxx
