@@ -29,3 +29,5 @@ function get_measures(coordinates::Vector, radii::Vector; delaunay_eps::Float64 
     measures_out
 end
 ```
+
+The parameter `delaunay_eps` defines the precision with which delaunay triangulations are calculated when computing the geometric measures. Lowering this value will speed up calculations but might reduce accuracy. The perfect value depends on the scale of the calculated unions. 
