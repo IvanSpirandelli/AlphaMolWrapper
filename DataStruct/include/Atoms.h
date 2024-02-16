@@ -17,12 +17,12 @@
 		double Radius;
 		double Coordinates[3];
 		double Weight;
-		double CoefS, CoefV, CoefM, CoefG;
+		double CoefV, CoefS, CoefM, CoefG;
 
 		Atoms() {
 		}
 
-		Atoms(double x, double y, double z, double radius, double aspS, double aspV, double aspM, double aspG);
+		Atoms(double x, double y, double z, double radius, double aspV, double aspS, double aspM, double aspG);
 		~Atoms();
 
 	private:
@@ -34,7 +34,7 @@
         Constructor: set coordinates to specific components
  *********************************************************************************/
 
-Atoms::Atoms(double x, double y, double z, double radius, double aspS, double aspV, double aspM, double aspG) {
+Atoms::Atoms(double x, double y, double z, double radius, double aspV, double aspS, double aspM, double aspG) {
 
 
 	int ndigit = 8;

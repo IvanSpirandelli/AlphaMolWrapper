@@ -382,7 +382,6 @@
 
 	std::cout << "npoints = " << npoints << std::endl;
 	if(npoints < 4) {
-		std::cout << "Why here ? " << std::endl;
 		int new_points = 4-npoints;
 		double *bcoord = new double[3*new_points];
 		double *brad   = new double[new_points];

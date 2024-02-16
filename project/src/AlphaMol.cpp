@@ -65,6 +65,7 @@ int main(int argc, char **argv)
 	int flag_CA;
 	double r_h2o = 1.4;
 	int flag_deriv = 0;
+    double delaunay_eps = 1;
 
         if (!parse_args(argc, argv, &INfile, &flag_CA, &r_h2o, &flag_deriv,
 		&OUTfile)) return 1;
@@ -133,7 +134,7 @@ int main(int argc, char **argv)
 	delcx.setup(natoms, coord, radii, coefS, coefV, coefM, coefG, vertices, tetra);
 
 	start_s = clock();
-	delcx.regular3D(vertices, tetra);
+	delcx.regular3D(vertices, tetra, delaunay_eps);
 	stop_s = clock();
 	std::cout << "Delaunay compute time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC) << " seconds" << std::endl;
 
@@ -186,10 +187,6 @@ int main(int argc, char **argv)
 	stop_s = clock();
 
 	std::cout << "Volumes compute time : " << (stop_s-start_s)/double(CLOCKS_PER_SEC) << " seconds" << std::endl;
-
-    for(int i = 0; i < natoms; i++) {
-        std::cout << dsurf[3*i] << " " << dsurf[3*i+1] << " " << dsurf[3*i+2] << std::endl;
-    }
 
 	std::cout << " " << std::endl;
 	std::cout << "Biomolecule from file      : " << INfile << std::endl;
@@ -295,7 +292,13 @@ bool parse_args(int argc, char **argv, std::string *INfile, int *flag_ca, double
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {
-    mod.method("calculate_measures",  [](jlcxx::ArrayRef<double> outs, const jlcxx::ArrayRef<double> in_coordinates, const jlcxx::ArrayRef<double> in_radii, const double in_coefS, const double in_coefV, const double in_coefM, const double in_coefG, const int8_t flag_deriv, const int8_t info_out_flag){
+    mod.method("calculate_measures",  [](
+        jlcxx::ArrayRef<double> outs, 
+        const jlcxx::ArrayRef<double> in_coordinates, 
+        const jlcxx::ArrayRef<double> in_radii, 
+        const double delaunay_eps,
+        const int8_t flag_deriv, 
+        const int8_t info_out_flag){
 
         std::vector<Atoms> atoms;
         for(int i = 0; i < in_coordinates.size()/3; i++) {
@@ -331,15 +334,15 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 coord[3*i+j] = atoms[i].Coordinates[j];
             }
             radii[i] = atoms[i].Radius;
-            coefS[i] = 1.0;
             coefV[i] = 1.0;
+            coefS[i] = 1.0;
             coefM[i] = 1.0;
             coefG[i] = 1.0;
         }
 
         delcx.setup(natoms, coord, radii, coefS, coefV, coefM, coefG, vertices, tetra);
 
-        delcx.regular3D(vertices, tetra);
+        delcx.regular3D(vertices, tetra, delaunay_eps);
 
         /*	==========================================================================================
             Generate alpha complex (with alpha=0.0)
@@ -394,12 +397,17 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         delete [] ballwmean; delete [] dmean; delete [] ballwgauss; delete [] dgauss;
     });
 
-    mod.method("calculate_measures_and_derivatives",  [](jlcxx::ArrayRef<double> measures_out,
+    mod.method("calculate_measures_and_derivatives",  [](
+            jlcxx::ArrayRef<double> measures_out,
             jlcxx::ArrayRef<double> dvol_out,
             jlcxx::ArrayRef<double> dsurf_out,
             jlcxx::ArrayRef<double> dmean_out,
             jlcxx::ArrayRef<double> dgauss_out,
-            const jlcxx::ArrayRef<double> in_coordinates, const jlcxx::ArrayRef<double> in_radii, const double in_coefS, const double in_coefV, const double in_coefM, const double in_coefG, const int8_t flag_deriv, const int8_t info_out_flag){
+            const jlcxx::ArrayRef<double> in_coordinates, 
+            const jlcxx::ArrayRef<double> in_radii, 
+            const double delaunay_eps,
+            const int8_t flag_deriv, 
+            const int8_t info_out_flag){
         std::vector<Atoms> atoms;
         for(int i = 0; i < in_coordinates.size()/3; i++) {
             Atoms atm(in_coordinates[i*3],
@@ -435,15 +443,15 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 coord[3*i+j] = atoms[i].Coordinates[j];
             }
             radii[i] = atoms[i].Radius;
-            coefS[i] = 1.0;
             coefV[i] = 1.0;
+            coefS[i] = 1.0;
             coefM[i] = 1.0;
             coefG[i] = 1.0;
         }
 
         delcx.setup(natoms, coord, radii, coefS, coefV, coefM, coefG, vertices, tetra);
 
-        delcx.regular3D(vertices, tetra);
+        delcx.regular3D(vertices, tetra, delaunay_eps);
 
         /*	==========================================================================================
             Generate alpha complex (with alpha=0.0)

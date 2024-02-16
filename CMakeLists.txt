@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1.0)
 project(alphamol)
 
-set(CMAKE_CXX_STANDARD 9)
+set(CMAKE_CXX_STANDARD 7)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Try to find the GNU Multiple Precision Arithmetic Library (GMP)

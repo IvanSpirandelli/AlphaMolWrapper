@@ -15,6 +15,7 @@
 	double err3 = 0;
 	double err4 = 0;
 	int flag_deriv = 0;
+	double delaunay_eps = 1.e-5;
 
 	std::vector<Vertex> vertices;
 	std::vector<Tetrahedron> tetra;
@@ -50,7 +51,7 @@
 
 		coord[i] += dx;
 		delcx.setup(natoms, coord, radii, coefS, coefV, coefM, coefG, vertices, tetra);
-		delcx.regular3D(vertices, tetra);
+		delcx.regular3D(vertices, tetra, delaunay_eps);
 		alfcx.alfcx(alpha, vertices, tetra);
 		alfcx.alphacxEdges(tetra, edges);
 		alfcx.alphacxFaces(tetra, faces);
@@ -63,7 +64,7 @@
 		x1 = WGauss;
 		coord[i] -= 2*dx;
 		delcx.setup(natoms, coord, radii, coefS, coefV, coefM, coefG, vertices, tetra);
-		delcx.regular3D(vertices, tetra);
+		delcx.regular3D(vertices, tetra, delaunay_eps);
 		alfcx.alfcx(alpha, vertices, tetra);
 		alfcx.alphacxEdges(tetra, edges);
 		alfcx.alphacxFaces(tetra, faces);

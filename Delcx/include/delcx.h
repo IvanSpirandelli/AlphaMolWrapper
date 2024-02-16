@@ -102,7 +102,7 @@ public:
                double *coefM, double *coefG, std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra);
 
     // Compute 3D weighted Delaunay triangulation
-    void regular3D(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra);
+    void regular3D(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra, const double eps);
 
     // generate list of edges
     void delaunayEdges(std::vector<Tetrahedron>& tetra, std::vector<std::pair<int, int> >& edges);
@@ -111,19 +111,19 @@ private:
 
     // locate tetrahedron in which point is inserted
     void locate_jw(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra,
-                   int ipoint, int *tetra_loc, int *iredundant);
+                   int ipoint, int *tetra_loc, int *iredundant, const double eps);
 
     // go over full link_facet
-    void flip(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra);
+    void flip(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra, const double eps);
 
     // Check if a point is inside a tetrahedron
     void inside_tetra(std::vector<Vertex>& vertices, int p, int a, int b, int c, int d,
-                      int iorient, bool *is_in, bool *redundant, int *ifail);
+                      int iorient, bool *is_in, bool *redundant, int *ifail, const double eps);
 
     // Check if a facet connects two tetrehedra that are convex
     void regular_convex(std::vector<Vertex>& vertices, int a, int b, int c,
                         int p, int o, int itest_abcp, bool *regular, bool *convex, bool *test_abpo,
-                        bool *test_bcpo, bool *test_capo);
+                        bool *test_bcpo, bool *test_capo, const double eps);
 
     // sign associated with the missing inf point
     void missinf_sign(int i, int j, int k, int *l, int *sign);
@@ -165,7 +165,7 @@ private:
     void mark_zero(std::vector<Tetrahedron>& tetra, int itetra, int ivertex);
 
     // remove flat tetrahedra
-    void peel(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra);
+    void peel(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra, const double eps);
 
     // Computes the volume of a tetrahedron
     double tetra_vol(double *a, double *b, double *c, double *d);
@@ -182,8 +182,6 @@ protected:
     std::queue<std::pair<int, int> > link_index;
     std::stack<int> free;
     std::vector<int> kill;
-
-    double eps = 1.e-4;
 
     int inf4_1[4] = {1, 1, 0, 0};
     int sign4_1[4] = {-1, 1, 1, -1};
@@ -438,7 +436,7 @@ void DELCX::setup(int npoints, double *coord, double *radii, double *coefS, doub
 	tetra:		all tetrahedra of the regular triangulation
  ==================================================================== */
 
-void DELCX::regular3D(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra)
+void DELCX::regular3D(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra, const double eps)
 {
 
     int iredundant, tetra_loc;
@@ -461,7 +459,7 @@ void DELCX::regular3D(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& t
  ==================================================================== */
 
         tetra_loc = tetra_last;
-        locate_jw(vertices, tetra, ipoint, &tetra_loc, &iredundant);
+        locate_jw(vertices, tetra, ipoint, &tetra_loc, &iredundant, eps);
 
 /* ====================================================================
 		If the point is redundant, move to next point
@@ -483,7 +481,7 @@ void DELCX::regular3D(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& t
 		Now scan link_facet list, and flip till list is empty
  ==================================================================== */
 
-        flip(vertices, tetra);
+        flip(vertices, tetra, eps);
 
 /* ====================================================================
 		At this stage, I should have a regular triangulation
@@ -511,7 +509,7 @@ void DELCX::regular3D(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& t
 	Now I peel off flat tetrahedra at the boundary of the DT
  ==================================================================== */
 
-    peel(vertices, tetra);
+    peel(vertices, tetra, eps);
 
     sos.clear_sos_gmp();
 }
@@ -528,7 +526,7 @@ void DELCX::regular3D(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& t
  ===================================================================================================== */
 
 void DELCX::inside_tetra(std::vector<Vertex>& vertices, int p, int a, int b, int c, int d,
-                         int iorient, bool *is_in, bool *redundant, int *ifail)
+                         int iorient, bool *is_in, bool *redundant, int *ifail, const double eps)
 {
 
     int i, j, k, l;
@@ -1229,7 +1227,7 @@ void DELCX::inside_tetra(std::vector<Vertex>& vertices, int p, int a, int b, int
 
 void DELCX::regular_convex(std::vector<Vertex>& vertices, int a, int b, int c,
                            int p, int o, int itest_abcp, bool *regular, bool *convex, bool *test_abpo,
-                           bool *test_bcpo, bool *test_capo)
+                           bool *test_bcpo, bool *test_capo, const double eps)
 {
     int i, j, k, l, m;
     int ia = 0, ib = 0, ic = 0, id = 0, ie = 0;
@@ -2681,7 +2679,7 @@ void DELCX::flip_4_1(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& te
  ==================================================================== */
 
 void DELCX::locate_jw(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra,
-                      int ival, int *tetra_loc, int *iredundant)
+                      int ival, int *tetra_loc, int *iredundant, const double eps)
 {
 
 /* ====================================================================
@@ -2722,7 +2720,7 @@ void DELCX::locate_jw(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& t
         if(tetra[itetra].info[0]==1) iorient = 1;
 
         inside_tetra(vertices, ival, a, b, c, d,
-                     iorient, &test_in, &test_red, &idx);
+                     iorient, &test_in, &test_red, &idx, eps);
 
         if(!test_in) itetra = tetra[itetra].Neighbours[idx];
 
@@ -2743,7 +2741,7 @@ void DELCX::locate_jw(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& t
 	The subroutine ends when the link facet is empty
  ============================================================================== */
 
-void DELCX::flip(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra)
+void DELCX::flip(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra, const double eps)
 {
     int ii, ij;
     int idxi, idxj, idxk, idxl;
@@ -2834,7 +2832,7 @@ void DELCX::flip(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra)
  ============================================================================== */
 
         regular_convex(vertices, a, b, c, p, o, itest_abcp, &regular,
-                       &convex, &test_abpo, &test_bcpo, &test_capo);
+                       &convex, &test_abpo, &test_bcpo, &test_capo, eps);
 
 /* ==============================================================================
 		if the link facet is locally regular, discard
@@ -3230,7 +3228,7 @@ void DELCX::mark_zero(std::vector<Tetrahedron>& tetra, int itetra, int ivertex)
 	of the DT
  ==================================================================== */
 
-void DELCX::peel(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra)
+void DELCX::peel(std::vector<Vertex>& vertices, std::vector<Tetrahedron>& tetra, const double eps)
 {
 
     int ia, ib, ic, id;
