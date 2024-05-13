@@ -393,7 +393,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         const jlcxx::ArrayRef<double> in_radii, 
         const double probe_radius,
         const double overlap_existence_penalty,
-        const double overlap_penalty_slope,
         const double delaunay_eps
         ){
 
@@ -483,7 +482,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
             if (ia / molecule_size != ib / molecule_size) {
                 double edge_ol = in_radii[ia] + in_radii[ib] - edges[i].Length;
                 if (edge_ol > 0.0) {
-                    total_overlap_penalty += overlap_existence_penalty + (overlap_penalty_slope * edge_ol);
+                    total_overlap_penalty += overlap_existence_penalty + edge_ol;
                 }
             }
         }
@@ -620,7 +619,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
             const jlcxx::ArrayRef<double> in_radii, 
             const double probe_radius,
             const double overlap_existence_penalty,
-            const double overlap_penalty_slope,
             const double delaunay_eps){
 
 
@@ -714,11 +712,11 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
             if (ia / molecule_size != ib / molecule_size) {
                 double edge_ol = in_radii[ia] + in_radii[ib] - edges[i].Length;
                 if (edge_ol > 0.0) {
-                    total_overlap_penalty += overlap_existence_penalty + (overlap_penalty_slope * edge_ol);
+                    total_overlap_penalty += overlap_existence_penalty + edge_ol;
                     // Compute the derivative of the overlap penalty
                     for (int j = 0; j < 3; j++) {
-                        dlol_out[3*ia+j] = overlap_penalty_slope * (coord[3*ib+j] - coord[3*ia+j]);
-                        dlol_out[3*ib+j] = overlap_penalty_slope * (coord[3*ia+j] - coord[3*ib+j]);
+                        dlol_out[3*ia+j] = coord[3*ib+j] - coord[3*ia+j];
+                        dlol_out[3*ib+j] = coord[3*ia+j] - coord[3*ib+j];
                     }
                 }
             }
@@ -741,7 +739,120 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         delete [] ballwsurf; delete [] dsurf; delete [] ballwvol; delete [] dvol;
         delete [] ballwmean; delete [] dmean; delete [] ballwgauss; delete [] dgauss;
     });
+
+
+    mod.method("get_geometric_measures_and_repulsive_lennard_jones",  [](
+        jlcxx::ArrayRef<double> outs, 
+        const jlcxx::ArrayRef<double> in_coordinates,
+        const int molecule_size, 
+        const jlcxx::ArrayRef<double> in_radii, 
+        const double probe_radius,
+        const double delaunay_eps
+        ){
+
+        /*	==========================================================================================
+            Compute Delaunay triangulation
+            ========================================================================================== */
+
+        clock_t start_s, stop_s;
+
+        std::vector<Vertex> vertices;
+        std::vector<Tetrahedron> tetra;
+
+        int natoms = in_coordinates.size()/3;
+        double *coord = new double[3*natoms];
+        double *radii = new double[natoms];
+        double *coefS = new double[natoms];
+        double *coefV = new double[natoms];
+        double *coefM = new double[natoms];
+        double *coefG = new double[natoms];
+
+
+        for(int i = 0; i < natoms; i++) {
+            for(int j = 0; j < 3; j++){
+                coord[3*i+j] = in_coordinates[i*3+j];
+            }
+            radii[i] = in_radii[i] + probe_radius;
+            coefV[i] = 1.0;
+            coefS[i] = 1.0;
+            coefM[i] = 1.0;
+            coefG[i] = 1.0;
+        }
+
+        delcx.setup(natoms, coord, radii, coefS, coefV, coefM, coefG, vertices, tetra);
+
+        delcx.regular3D(vertices, tetra, delaunay_eps);
+
+        /*	==========================================================================================
+            Generate alpha complex (with alpha=0.0)
+            ========================================================================================== */
+
+        double alpha = 0;
+        alfcx.alfcx(alpha, vertices, tetra);
+
+        /*	==========================================================================================
+            Compute surface area and, optionally volume of the union of balls.
+            If requested, compute also their derivatives
+            ========================================================================================== */
+
+        std::vector<Edge> edges;
+        std::vector<Face> faces;
+        alfcx.alphacxEdges(tetra, edges);
+        alfcx.alphacxFaces(tetra, faces);
+
+        double Surf, WSurf, Vol, WVol, Mean, WMean, Gauss, WGauss;
+
+        int nfudge = 8;
+        double *ballwsurf = new double[natoms+nfudge];
+        double *dsurf = new double[3*(natoms+nfudge)];
+        memset(dsurf, 0, 3*(natoms+nfudge)*sizeof(double));
+
+        double *ballwvol, *dvol;
+        ballwvol = new double[natoms+nfudge];
+        dvol = new double[3*(natoms+nfudge)];
+        memset(dvol, 0, 3*(natoms+nfudge)*sizeof(double));
+
+        double *ballwmean, *dmean;
+        ballwmean = new double[natoms+nfudge];
+        dmean = new double[3*(natoms+nfudge)];
+        memset(dmean, 0, 3*(natoms+nfudge)*sizeof(double));
+
+        double *ballwgauss, *dgauss;
+        ballwgauss = new double[natoms+nfudge];
+        dgauss = new double[3*(natoms+nfudge)];
+        memset(dgauss, 0, 3*(natoms+nfudge)*sizeof(double));
+
+        volumes.ball_dvolumes(vertices, tetra, edges, faces, &WSurf, &WVol,
+                                &WMean, &WGauss, &Surf, &Vol, &Mean, &Gauss, ballwsurf, ballwvol,
+                                ballwmean, ballwgauss, dsurf, dvol, dmean, dgauss, 0);
+
+        double lennard_jones_repulsion = 0.0;
+        
+        for (int i = 0; i < edges.size(); i++) {
+            int ia = edges[i].Vertices[0] - 4;
+            int ib = edges[i].Vertices[1] - 4;
+
+            // Check if the edge is between two different molecules
+            if (ia / molecule_size != ib / molecule_size) {
+                double ratio = (in_radii[ia] + in_radii[ib]) / edges[i].Length;
+                if (ratio > 1.0) {
+                    lennard_jones_repulsion += pow(ratio, 12) - pow(ratio, 6) ;
+                }
+            }
+        }
+
+        outs[0] = Vol;
+        outs[1] = Surf;
+        outs[2] = Mean;
+        outs[3] = Gauss;
+        outs[4] = lennard_jones_repulsion;
+
+        delete [] coord; delete [] radii; delete [] coefS; delete [] coefV; delete [] coefM; delete [] coefG;
+        delete [] ballwsurf; delete [] dsurf; delete [] ballwvol; delete [] dvol;
+        delete [] ballwmean; delete [] dmean; delete [] ballwgauss; delete [] dgauss;
+    });
 }
+
 
 
 
