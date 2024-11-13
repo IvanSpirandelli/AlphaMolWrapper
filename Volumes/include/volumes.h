@@ -490,7 +490,7 @@ GAUSSCORNER gauss;
 		ballwvol[ia]  -= coefval*vola; 
 		ballwvol[ib]  -= coefval*volb; 
 
-		val = coef_E*pi*coefvalS*r*phi;
+		val = coef_E*pi*coefvalS*r*phi/2;
 		ballwmean[ia] -= val;
 		ballwmean[ib] -= val;
 

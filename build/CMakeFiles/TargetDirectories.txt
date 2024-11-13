@@ -1,0 +1,8 @@
+/Users/ivanspirandelli/Doktor/Code/AlphaMolWrapper/build/CMakeFiles/alphamolwrapper.dir
+/Users/ivanspirandelli/Doktor/Code/AlphaMolWrapper/build/CMakeFiles/AlphaMol.dir
+/Users/ivanspirandelli/Doktor/Code/AlphaMolWrapper/build/CMakeFiles/edit_cache.dir
+/Users/ivanspirandelli/Doktor/Code/AlphaMolWrapper/build/CMakeFiles/rebuild_cache.dir
+/Users/ivanspirandelli/Doktor/Code/AlphaMolWrapper/build/CMakeFiles/list_install_components.dir
+/Users/ivanspirandelli/Doktor/Code/AlphaMolWrapper/build/CMakeFiles/install.dir
+/Users/ivanspirandelli/Doktor/Code/AlphaMolWrapper/build/CMakeFiles/install/local.dir
+/Users/ivanspirandelli/Doktor/Code/AlphaMolWrapper/build/CMakeFiles/install/strip.dir

@@ -303,8 +303,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
             Compute Delaunay triangulation
             ========================================================================================== */
 
-        clock_t start_s, stop_s;
-
         std::vector<Vertex> vertices;
         std::vector<Tetrahedron> tetra;
 
@@ -389,7 +387,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     mod.method("get_geometric_measures_and_overlap_value",  [](
         jlcxx::ArrayRef<double> outs, 
         const jlcxx::ArrayRef<double> in_coordinates,
-        const int molecule_size, 
+        const int molecule_size,
         const jlcxx::ArrayRef<double> in_radii, 
         const double probe_radius,
         const double overlap_existence_penalty,
@@ -399,9 +397,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         /*	==========================================================================================
             Compute Delaunay triangulation
             ========================================================================================== */
-
-        clock_t start_s, stop_s;
-
+            
         std::vector<Vertex> vertices;
         std::vector<Tetrahedron> tetra;
 
@@ -514,8 +510,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
             Compute Delaunay triangulation
             ========================================================================================== */
 
-        clock_t start_s, stop_s;
-
         std::vector<Vertex> vertices;
         std::vector<Tetrahedron> tetra;
 
@@ -615,7 +609,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
             jlcxx::ArrayRef<double> dgauss_out,
             jlcxx::ArrayRef<double> dlol_out,
             const jlcxx::ArrayRef<double> in_coordinates, 
-            const int molecule_size, 
+            const int molecule_size,
             const jlcxx::ArrayRef<double> in_radii, 
             const double probe_radius,
             const double overlap_existence_penalty,
@@ -625,8 +619,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         /*	==========================================================================================
             Compute Delaunay triangulation
             ========================================================================================== */
-
-        clock_t start_s, stop_s;
 
         std::vector<Vertex> vertices;
         std::vector<Tetrahedron> tetra;
@@ -753,8 +745,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         /*	==========================================================================================
             Compute Delaunay triangulation
             ========================================================================================== */
-
-        clock_t start_s, stop_s;
 
         std::vector<Vertex> vertices;
         std::vector<Tetrahedron> tetra;
