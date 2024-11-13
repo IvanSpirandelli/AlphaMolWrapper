@@ -1,5 +1,6 @@
 # Excluding standard binary paths
 /bin
+/build
 /project/src/AlphaMol.o
 *.so
 AlphaMolStatic*
