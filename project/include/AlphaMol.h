@@ -62,4 +62,6 @@ static void usage(char** argv);
 bool parse_args(int argc, char **argv, std::string *INfile, int *flag_CA, 
 	double *r_h2o, int *flag_deriv, std::string *OUTfile);
 
+int find_molecule_id_from_sizes(int vertex_index, const jlcxx::ArrayRef<int64_t>& molecule_sizes);
+
 #endif

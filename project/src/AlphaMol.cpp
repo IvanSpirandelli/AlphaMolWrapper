@@ -288,6 +288,28 @@ bool parse_args(int argc, char **argv, std::string *INfile, int *flag_ca, double
 	return true;
 }
 
+/**
+ * @brief Finds the molecule ID for a given vertex index using a jlcxx::ArrayRef of sizes.
+ *
+ * @param vertex_index The index of the vertex to check.
+ * @param molecule_sizes A jlcxx::ArrayRef pointing to the Julia array of molecule sizes.
+ * @return The ID of the molecule, or -1 if the index is out of bounds.
+ */
+int find_molecule_id_from_sizes(int vertex_index, const jlcxx::ArrayRef<int64_t>& molecule_sizes) {
+    int cumulative_size = 0;
+    // The .size() and operator[] methods work just like std::vector
+    for (int i = 0; i < molecule_sizes.size(); ++i) {
+        int upper_bound = cumulative_size + molecule_sizes[i] - 1;
+
+        if (vertex_index <= upper_bound) {
+            return i; // Found the molecule, return its ID.
+        }
+        cumulative_size += molecule_sizes[i];
+    }
+    return -1; // Index is out of bounds.
+}
+
+
 
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
@@ -387,7 +409,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     mod.method("get_geometric_measures_and_overlap_value",  [](
         jlcxx::ArrayRef<double> outs, 
         const jlcxx::ArrayRef<double> in_coordinates,
-        const int molecule_size,
+        const jlcxx::ArrayRef<int64_t>  molecule_sizes,
         const jlcxx::ArrayRef<double> in_radii, 
         const double probe_radius,
         const double overlap_existence_penalty,
@@ -409,7 +431,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         double *coefV = new double[natoms];
         double *coefM = new double[natoms];
         double *coefG = new double[natoms];
-
 
         for(int i = 0; i < natoms; i++) {
             for(int j = 0; j < 3; j++){
@@ -470,13 +491,17 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                               ballwmean, ballwgauss, dsurf, dvol, dmean, dgauss, 0);
 
         double total_overlap_penalty = 0.0;
-        
+
         for (int i = 0; i < edges.size(); i++) {
             int ia = edges[i].Vertices[0] - 4;
             int ib = edges[i].Vertices[1] - 4;
 
-            // Check if the edge is between two different molecules
-            if (ia / molecule_size != ib / molecule_size) {
+            // Find the molecule ID for each vertex using the sizes vector
+            int molecule_id_a = find_molecule_id_from_sizes(ia, molecule_sizes);
+            int molecule_id_b = find_molecule_id_from_sizes(ib, molecule_sizes);
+
+            // Check if the edge is between two different, valid molecules
+            if (molecule_id_a != -1 && molecule_id_b != -1 && molecule_id_a != molecule_id_b) {
                 double edge_ol = in_radii[ia] + in_radii[ib] - edges[i].Length;
                 if (edge_ol > 0.0) {
                     total_overlap_penalty += overlap_existence_penalty + (overlap_penalty_slope * edge_ol);
@@ -494,6 +519,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         delete [] ballwsurf; delete [] dsurf; delete [] ballwvol; delete [] dvol;
         delete [] ballwmean; delete [] dmean; delete [] ballwgauss; delete [] dgauss;
     });
+
+
 
     mod.method("get_geometric_measures_with_derivatives",  [](
             jlcxx::ArrayRef<double> measures_out,
@@ -610,7 +637,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
             jlcxx::ArrayRef<double> dgauss_out,
             jlcxx::ArrayRef<double> dlol_out,
             const jlcxx::ArrayRef<double> in_coordinates, 
-            const int molecule_size,
+            const jlcxx::ArrayRef<int64_t>  molecule_sizes,
             const jlcxx::ArrayRef<double> in_radii, 
             const double probe_radius,
             const double overlap_existence_penalty,
@@ -697,24 +724,43 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                               ballwmean, ballwgauss, dsurf, dvol, dmean, dgauss, 1);
 
         double total_overlap_penalty = 0.0;
-        int mol_size = 2;
-        
+        const double epsilon = 1e-9; // To prevent division by zero
+
         for (int i = 0; i < edges.size(); i++) {
             int ia = edges[i].Vertices[0] - 4;
             int ib = edges[i].Vertices[1] - 4;
-            // Check if the edge is between two different molecules
-            if (ia / molecule_size != ib / molecule_size) {
+
+            int molecule_id_a = find_molecule_id_from_sizes(ia, molecule_sizes);
+            int molecule_id_b = find_molecule_id_from_sizes(ib, molecule_sizes);
+
+            if (molecule_id_a != -1 && molecule_id_b != -1 && molecule_id_a != molecule_id_b) {
                 double edge_ol = in_radii[ia] + in_radii[ib] - edges[i].Length;
+
                 if (edge_ol > 0.0) {
                     total_overlap_penalty += overlap_existence_penalty + (overlap_penalty_slope * edge_ol);
-                    // Compute the derivative of the overlap penalty
-                    for (int j = 0; j < 3; j++) {
-                        dlol_out[3*ia+j] = overlap_penalty_slope * (coord[3*ib+j] - coord[3*ia+j]);
-                        dlol_out[3*ib+j] = overlap_penalty_slope * (coord[3*ia+j] - coord[3*ib+j]);
+
+                    double edge_length = edges[i].Length;
+
+                    if (edge_length > epsilon) {
+                        double deriv_factor = overlap_penalty_slope / edge_length;
+
+                        // The derivative vector is along the line connecting the two atoms
+                        for (int j = 0; j < 3; j++) {
+                            // Vector component from ia to ib
+                            double diff_j = coord[3*ib+j] - coord[3*ia+j];
+
+                            // Add the force contribution to each atom.
+                            // Force on 'ia' is in the direction of (ib - ia)
+                            dlol_out[3*ia+j] += deriv_factor * diff_j;
+                            
+                            // Force on 'ib' is opposite
+                            dlol_out[3*ib+j] -= deriv_factor * diff_j;
+                        }
                     }
                 }
             }
         }
+    
 
         measures_out[0] = Vol;
         measures_out[1] = Surf;
