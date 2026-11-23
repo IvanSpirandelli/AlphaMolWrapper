@@ -162,7 +162,7 @@ GAUSSCORNER gauss;
 		edges[i].Surf   = (coefaS*surfa + coefbS*surfb)/twopi;
 		edges[i].Vol    = (coefaV*vola + coefbV*volb)/twopi;
 		edges[i].CoefM1 = (coefaM*surfa/ra + coefbM*surfb/rb)/twopi;
-		edges[i].CoefM2  = coef_E*(coefaM+coefbM)*r*phi/2;
+		edges[i].CoefM2  = coef_E*(coefaM+coefbM)*r*phi/4;  // mean edge term is r*phi/2 per ball (below)
 		edges[i].CoefG1 = (coefaG*surfa/ra2 + coefbG*surfb/rb2)/twopi;
 		edges[i].CoefG2  = coef_E*(coefaG+coefbG)*l/2;
 		edges[i].dsurf  = 0;
@@ -502,7 +502,7 @@ GAUSSCORNER gauss;
 			edges[iedge].dsurf  -= coefval* (coefaS*dsurfa2 + coefbS*dsurfb2);
 			edges[iedge].dvol   -= coefval* (coefaV*dvola2 + coefbV*dvolb2);
 			edges[iedge].dmean  -= coefval* (coefaM*dsurfa2/ra + coefbM*dsurfb2/rb);
-			edges[iedge].dmean  -= coef_E*coefvalS*pi*(r*dphi+phi*dr)*(coefaM+coefbM);
+			edges[iedge].dmean  -= coef_E*coefvalS*pi*(r*dphi+phi*dr)*(coefaM+coefbM)/2;  // derivative of the r*phi/2 term above
 			edges[iedge].dgauss -= coefval* (coefaG*dsurfa2/ra2 + coefbG*dsurfb2/rb2);
 			edges[iedge].dgauss -= coef_E*coefvalS*pi*dl*(coefaG+coefbG);
 		}
